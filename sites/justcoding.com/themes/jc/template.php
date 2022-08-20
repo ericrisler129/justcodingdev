@@ -27,8 +27,46 @@ function jc_form_alter(&$form, &$form_state, $form_id) {
     $form['actions']['submit']['#attributes']['class'][] = 'button-input';
     $form['actions']['submit']['#attributes']['class'][] = 'button-input-brand1';
   }
+
+  if($form_id == 'user_login') {
+    $form['#suffix'] = '<p><strong>Unable to log in?</strong></p><p>Click <a href="https://accounts.blr.com/account/forgot" target="_blank">here</a> to reset your password or unlock your account.</p><p><strong>Forgot your username?</strong></p><p>Contact customer care at <a href="mailto:customerservice@hcpro.com" target="_blank">customerservice@hcpro.com</a> or call 800-727-5257, between 8 AM - 5 PM CT.</p></div>';
+    $user_login_final_validate_index = array_search('user_login_final_validate', $form['#validate']);
+    if ($user_login_final_validate_index >= 0) {
+      $form['#validate'][$user_login_final_validate_index] = '_user_login_final_validate';
+    }
+  }
 }
 
+function _user_login_final_validate($form, &$form_state) {
+  if (empty($form_state['uid'])) {
+    // Always register an IP-based failed login event.
+    flood_register_event('failed_login_attempt_ip', variable_get('user_failed_login_ip_window', 3600));
+    // Register a per-user failed login event.
+    if (isset($form_state['flood_control_user_identifier'])) {
+      flood_register_event('failed_login_attempt_user', variable_get('user_failed_login_user_window', 21600), $form_state['flood_control_user_identifier']);
+    }
+
+    if (isset($form_state['flood_control_triggered'])) {
+      if ($form_state['flood_control_triggered'] == 'user') {
+        form_set_error('name', format_plural(variable_get('user_failed_login_user_limit', 5), 'Sorry, there has been more than one failed login attempt for this account. It is temporarily blocked. Try again later or <a href="@url">request a new password</a>.', 'This account is locked. Click <a href="@url">here</a> to reset your password and unlock your account. Please contact Customer Service at 800-727-5257 if you need further assistance.', array('@url' => url('user/password'))));
+        module_invoke_all('user_flood_control', ip_address(), $form_state['values']['name']);
+      }
+      else {
+        form_set_error('name', t('Sorry, too many failed login attempts from your IP address. This IP address is temporarily blocked. Try again later or <a href="@url">request a new password</a>.', array('@url' => url('user/password'))));
+        module_invoke_all('user_flood_control', ip_address());
+      }
+      drupal_add_http_header('Status', '403 Forbidden');
+    }
+    else {
+      $query = isset($form_state['input']['name']) ? array('name' => $form_state['input']['name']) : array();
+      form_set_error('name', t('Sorry, unrecognized username or password. <a href="@password">Have you forgotten your password?</a>', array('@password' => url('user/password', array('query' => $query)))));
+      watchdog('user', 'Login attempt failed for %user.', array('%user' => $form_state['values']['name']));
+    }
+  }
+  elseif (isset($form_state['flood_control_user_identifier'])) {
+    flood_clear_event('failed_login_attempt_user', $form_state['flood_control_user_identifier']);
+  }
+}
 /**
  * Hook to set 'no title' for the pages.
  * As all page nodes are using 'title' to display this function was written.
