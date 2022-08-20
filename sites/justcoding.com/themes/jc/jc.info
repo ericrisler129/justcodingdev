@@ -1,0 +1,22 @@
+name = jc
+description = HCPRO based subtheme for jc
+base theme = hcprobt
+screenshot = screenshot.png
+engine = phptemplate
+core = 7.x
+
+
+entity_print[views][all] = 'css/entityprint.css
+; ========================================
+; Regions
+; ========================================
+regions[top]            = Page Top
+regions[header]         = Header
+regions[navigation]     = Navigation bar
+regions[masthead]				= Masthead
+regions[content]        = Content
+regions[sidebar_first]  = First sidebar
+regions[sidebar_second] = Second sidebar
+regions[content_bottom] = Content Bottom
+regions[footer]         = Footer
+regions[bottom]         = Page Bottom

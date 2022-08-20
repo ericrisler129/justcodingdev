@@ -1,0 +1,94 @@
+<?php
+
+function jc_pager_preprocess_node(&$variables) {
+
+  if ($variables['type'] == 'article' && isset($variables['field_publication'][0]['tid']) ) {
+
+    drupal_add_css(drupal_get_path('module', 'jc_pager') . '/jc_pager.css');
+    $variables['jc_pager_next_and_prev'] = build();
+    $variables['jc_pager_next_prev_bottom'] = build();
+  }
+
+}
+
+
+function build() {
+
+  if (arg(0) == 'node' && is_numeric(arg(1))) {
+    // Get the nid
+    $nid = arg(1);
+
+    // Load the node if you need to
+    $node = node_load($nid);
+  }
+
+  if(!isset($node->field_volume_and_issue['und'][0]['tid']) || !isset($node->field_publication[LANGUAGE_NONE][0]['tid'])){
+    return '';
+  }
+
+  $iss = $node->field_volume_and_issue['und'][0]['tid'];
+
+  $vol = taxonomy_get_parents($iss);
+  $vol = reset($vol);
+  $issue = taxonomy_term_load($iss);
+  $publication = $node->field_publication[LANGUAGE_NONE][0]['tid'];
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'article')
+    ->propertyCondition('status', 1)
+    ->fieldCondition('field_volume_and_issue', 'tid', $issue->tid)
+    ->fieldCondition('field_publication', 'tid', $publication, '=')
+    ->addTag('filter_field_file')
+    //->fieldCondition('field_file', 'fid', '', '<>')
+    //->hasField('field_file')
+    //->fieldCondition('field_file', 'fid', '', 'IS NULL')
+    //->notExists('field_file')
+    //->fieldCondition('field_weight', 'value', 0, '!=')
+    // ->fieldOrderBy('field_publication', 'position', $direction = 'ASC')
+    ->fieldOrderBy('field_weight', 'value', $direction = 'ASC')
+    ->fieldOrderBy('field_published', 'value', $direction = 'DESC');
+    //->propertyOrderBy('published', 'DESC');
+
+  $result = $query->execute();
+  if($result) {
+    $position = array_search($nid,array_keys($result['node']));
+
+    $size = count($result['node']);
+
+    //$next_nid = $result['node'][$size+1];
+    if($position == 0) {
+      $next_url = '';
+    } else {
+    $next_nid = array_slice($result['node'],$position-1,1);//array_slice($input, 2);
+    !empty($next_nid) ? $next_url =  drupal_get_path_alias('node/' . $next_nid[0]->nid): $next_url = '' ;
+    }
+
+
+    if ($position+1 == $size ) {
+      $prev_url = '';
+    } else {
+    $prev_nid = array_slice($result['node'],$position+1,1);//array_slice($input, 2);
+
+    !empty($prev_nid) ? $prev_url =  drupal_get_path_alias('node/' . $prev_nid[0]->nid): $prev_url = '' ;
+    }
+
+    $build_next = !empty($next_url)?'<div class="next-url"><a href="/'. $next_url . '">Next<i class="fa fa-angle-double-right"></i></a></div>': '' ;
+
+    $build_prev = !empty($prev_url)?'<div class="prev-url"><a href="/'. $prev_url . '"><i class="fa fa-angle-double-left"></i>Previous</a></div>': '' ;
+
+
+
+    return '<div id="prev-next-build">'.$build_next . $build_prev.'</div>';
+  } else {
+    return '';
+  }
+
+}
+/**
+ * Implements hook_query_TAG_alter()
+ */
+function jc_pager_query_filter_field_file_alter(QueryAlterableInterface $query) {
+  $query->leftJoin('field_data_field_file', 'o', 'node.nid = o.entity_id');
+  $query->isNull('o.field_file_fid');
+}

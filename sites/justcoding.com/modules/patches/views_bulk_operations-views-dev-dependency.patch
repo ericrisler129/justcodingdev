@@ -1,0 +1,13 @@
+diff --git a/profiles/hcpro/modules/contrib/views_bulk_operations/views_bulk_operations.info b/profiles/hcpro/modules/contrib/views_bulk_operations/views_bulk_operations.info
+index 058bef7a..85dced2c 100644
+--- a/profiles/hcpro/modules/contrib/views_bulk_operations/views_bulk_operations.info
++++ b/profiles/hcpro/modules/contrib/views_bulk_operations/views_bulk_operations.info
+@@ -1,7 +1,7 @@
+ name = Views Bulk Operations
+ description = Provides a way of selecting multiple rows and applying operations to them.
+ dependencies[] = entity
+-dependencies[] = views (>=3.12)
++dependencies[] = views
+ package = Views
+ core = 7.x
+ php = 5.2.9

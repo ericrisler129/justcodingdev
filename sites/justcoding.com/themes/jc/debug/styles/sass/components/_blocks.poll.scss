@@ -1,0 +1,47 @@
+.block-poll {
+  .node.node-teaser {
+    .field-name-title {
+      padding: 0;
+    }
+  }
+
+  h3 {
+    font-size: $FSbase;
+    margin: 0 0 15px;
+  }
+
+  .form-radios {
+    .form-type-radio {
+      label {
+        display: inline-block;
+        vertical-align: middle;
+        width: 85%;
+      }
+    }
+  }
+
+  .poll-vote-form {
+    font-size: $FSsmall;
+
+    label {
+      margin: 0 0 0 5px;
+    }
+  }
+
+  .poll-results {
+    .foreground {
+      background-color: $brand1;
+    }
+
+    .poll-cancel-form {
+      .form-actions {
+        text-align: center;
+      }
+    }
+  }
+
+  .group-buttons {
+    text-align: center;
+    margin: 20px 0 0;
+  }
+}

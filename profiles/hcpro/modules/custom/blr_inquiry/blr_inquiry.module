@@ -1,0 +1,132 @@
+<?php
+
+define('SITE_ID', 7);
+
+/**
+ * Implements hook_menu().
+ */
+function blr_inquiry_menu() {
+  $items['tools/inquiry'] = array(
+    'title' => 'Inquiry tracking',
+    'page callback' => 'blr_inquiry_tracking',
+    'type' => MENU_NORMAL_ITEM,
+    'access callback' => TRUE,
+    'weight' => 2,
+  );
+  return $items;
+}
+
+/**
+ * Callback function for tools/inquiry url.
+ */
+function blr_inquiry_tracking() {
+  $key = 494092792;
+  $code = "ZbWhkDmeNnXMTW2H4NstAfnMqUewAVkQbKk4h7FVYYB6XkmFnEuwFuNngd826FjQZexBMpaNLCpgUjyrkzWfAaVfbJCmUJwCYrhX5vY99sCcGQdU5LDrfPAUmmPqcczs";
+  if (!empty($_SERVER['HTTP_INQUIRY'])) {
+    $url = "https://d1v834xrsg9kw8.cloudfront.net/api/import/index.php?key=" . $key;
+
+    $header = array("Content-Type" => "application/x-www-form-urlencoded;charset=UTF-8");
+    $post_fields = "";
+
+    $feed = curl_init();
+    $post_fields = 'code=' . $code;
+    foreach ($_POST as $k => $v) {
+      $post_fields = $post_fields . "&" . $k . "=" . $v;
+    }
+
+    $options = array(
+      CURLOPT_HTTPHEADER => $header,
+      CURLOPT_POSTFIELDS => $post_fields,
+      CURLOPT_HEADER => 0,
+      CURLOPT_POST => 1,
+      CURLOPT_VERBOSE => 1,
+      CURLOPT_URL => $url,
+      CURLOPT_RETURNTRANSFER => 1,
+      CURLOPT_SSL_VERIFYPEER => 0
+    );
+    curl_setopt_array($feed, $options);
+    $response = curl_exec($feed);
+    curl_close($feed);
+
+    print $response;
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function blr_inquiry_process_page(&$vars) {
+  $profile = isset($vars['node']) ? get_tracking_values($vars['node']) : get_tracking_values();
+
+  drupal_add_js(
+   'var inquiry_site_id =' . SITE_ID . '
+    var inquiry_first_name = "' . $profile->first_name . '";
+    var inquiry_last_name = "' . $profile->last_name .'"; // USER LAST NAME, AS STRING
+    var inquiry_email = "' . $profile->email . '"; // USER EMAIL, AS STRING
+    var inquiry_company = "' . $profile->company . '";// USER COMPANY, AS STRING
+    var inquiry_subscription_type = "' . $profile->subscription_type . '"; // USER SUBSCRIPTION TYPE, AS STRING
+    var inquiry_top = "' . $profile->page_top_level . '"; // TOP VARIABLE, AS STRING
+    var inquiry_mid = "' . $profile->page_mid_level . '"; // MID VARIABLE, AS STRING
+    var inquiry_low = "' . $profile->page_low_level . '"; // LOW VARIABLE, AS STRING
+    var inquiry_cc_id = "' . $profile->user_id . '"; // CC ID, AS INTEGER
+    var inquiry_username = "' . $profile->username . '"; // USER USERNAME, AS STRING
+    var inquiry_url = "/tools/inquiry";',
+    'inline'
+  );
+  drupal_add_js('https://d1v834xrsg9kw8.cloudfront.net/api/js/import.js', 'external');
+}
+
+/**
+ * Helper function to get tracking data for inquiry.
+ */
+function get_tracking_values($node = array()) {
+  $webauth_profile = isset($_SESSION['webauth']) ? $_SESSION['webauth'] : null;
+  $profile = new UserProfile();
+  $url_components = explode('/', request_uri());
+  $node_title = isset($node->title) ? $node->title : '';
+  $node_publication = isset($node->field_publication[LANGUAGE_NONE][0]['publication']) ? $node->field_publication[LANGUAGE_NONE][0]['publication'] : '';
+
+  $profile->page_top_level = $node_publication;
+  $profile->page_mid_level = isset($url_components[1]) ? $url_components[1] : '';
+  $profile->page_low_level = $node_title;
+
+  if (!empty($webauth_profile)) {
+    if (!empty($webauth_profile['profile_address'])) {
+      $profile->first_name = $webauth_profile['profile_address']['first_name'];
+      $profile->last_name = $webauth_profile['profile_address']['last_name'];
+      $profile->email = $webauth_profile['email'];
+      $profile->company = $webauth_profile['profile_address']['company'];
+      $profile->subscription_type = get_user_roles();
+      $profile->user_id = $webauth_profile['id'];
+      $profile->username = $webauth_profile['username'];
+    }
+  }
+
+  return $profile;
+}
+
+/**
+ * Helper function to get user roles as string.
+ */
+function get_user_roles() {
+  global $user;
+  $roles_array = $user->roles;
+  return implode(',', $roles_array);
+}
+
+/**
+ * Inquiry profile class.
+ */
+class UserProfile {
+  public $first_name = '';
+  public $last_name = '';
+  public $email = '';
+  public $company = '';
+  public $subscription_type = '';
+  public $page_top_level = '';
+  public $page_mid_level = '';
+  public $page_low_level = '';
+  public $user_id = '';
+  public $username = '';
+
+}

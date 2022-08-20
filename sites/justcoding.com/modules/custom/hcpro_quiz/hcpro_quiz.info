@@ -1,0 +1,5 @@
+name = HCPro Quiz
+package = HCPro
+description = "Quiz customizations for HCPRO"
+dependencies[] = quiz
+core = 7.x

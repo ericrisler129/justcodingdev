@@ -1,0 +1,117 @@
+aside {
+  &.l-region--sidebar-second {
+    border-left: 1px solid $contentBorder;
+    border-right: 1px solid $contentBorder;
+    border-bottom: 1px solid $contentBorder;
+
+    .block {
+      margin: 0 0 $gutterSize;
+
+      .title-wrapper {
+        h2 {
+          font-size: $FSbase;
+          text-align: center;
+          text-transform: uppercase;
+          padding: 15px $gutterSize;
+          margin: 0;
+          border-top: 1px solid $contentBorder;
+          border-bottom: 1px solid $contentBorder;
+          color: $brand2;
+
+          a {
+            color: $brand2;
+          }
+        }
+      }
+
+      .block__content {
+        padding: $gutterSize;
+      }
+
+      .node-teaser {
+        padding: 0;
+      }
+
+      &.nopadding {
+        .block__content {
+          padding: 0;
+        }
+      }
+
+      &.infobox {
+        background-color: $infobox;
+        border-left: 3px solid $headings;
+      }
+    }
+  }
+  
+  .propel-block {
+    margin: 0 !important;
+
+	.block__content {
+	  padding: 0 !important;
+	}
+  }
+}
+
+.block {
+  &.propel-standard-block {
+    margin: 0 0 $gutterSize;
+    border: 1px solid $hr;
+    overflow: hidden;
+
+    .title-wrapper {
+	  border-top: 8px solid $orange;
+      .block__title {
+        font-size: $FSbase;
+        text-align: center;
+        text-transform: uppercase;
+        padding: 10px;
+        margin: 0;
+        border-bottom: 1px solid $hr;
+
+        a {
+          color: $copy;
+        }
+      }
+    }
+
+    .block__content {
+      padding: $gutterSize;
+    }
+
+    &.noborder {
+      border: none;
+
+      .block__title {
+        border: none;
+      }
+    }
+
+    &.nopadding {
+      .block__content {
+        padding: 0;
+      }
+    }
+
+    &.nomargin {
+      margin: 0;
+    }
+
+    &.block-center {
+      text-align: center;
+    }
+  }
+}
+
+.section-propel {
+  .l-region--sidebar-second {
+    border: none;
+	
+	.block--views-propel-ate-block-1 {
+	  .block__title {
+	    color: #555555;
+	  }
+	}
+  }
+}

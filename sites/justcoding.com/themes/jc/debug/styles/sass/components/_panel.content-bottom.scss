@@ -1,0 +1,89 @@
+.block-content-bottom {
+  .panel-display {
+    border: 1px solid $contentBorder;
+
+    .panel-panel {
+      position: relative;
+      border-right: 1px solid $contentBorder;
+
+      &.panel-col-last {
+        border: none;
+      }
+
+      &:nth-child(even) {
+        width: 34%;
+      }
+
+      .inside {
+        margin: 0;
+
+        h2 {
+          font-size: $FSbase;
+          text-align: center;
+          text-transform: uppercase;
+          padding: 15px $gutterSize;
+          margin: 0;
+          border-bottom: 1px solid $contentBorder;
+          color: $brand2;
+
+          a {
+            color: $brand2;
+          }
+        }
+
+        .block__content {
+          padding: $gutterSize;
+
+          .view-content {
+            .views-row {
+              padding: 0 0 10px;
+              margin: 0 0 10px;
+              border-bottom: 1px solid $contentBorder;
+            }
+          }
+
+          .view-footer {
+            text-align: center;
+            margin: 20px 0 0;
+          }
+        }
+      }
+
+      .block--blr-events {
+        .footer-event-block {
+          padding: 0 0 10px;
+          margin: 0 0 10px;
+          border-bottom: 1px solid $contentBorder;
+
+          .event-category-title {
+            font-weight: $primaryFontWeightMed;
+          }
+
+          .event-item {
+            display: inline;
+
+            .event-date {
+              font-style: italic;
+              margin: 0 10px;
+              color: $brand2;
+            }
+
+            .event-item-link {
+              display: block;
+            }
+          }
+        }
+
+        .button-wrapper {
+          text-align: center;
+          margin: 20px 0 0;
+        }
+      }
+
+      .button-wrapper {
+        @include center(x);
+        bottom: 20px;
+      }
+    }
+  }
+}

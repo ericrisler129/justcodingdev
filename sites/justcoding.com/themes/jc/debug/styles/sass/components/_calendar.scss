@@ -1,0 +1,113 @@
+.view-calendar {
+  border: 1px solid $hr;
+    .date-heading h3 {
+	  color: $orange;
+	}
+	.pager {
+      margin: 0 !important;
+	  li {
+	    display: block;
+	  }
+	  .date-prev, .date-next {
+	    background: none repeat scroll 0 0 $contentBG;
+		border: none;
+
+		&:hover {
+		  background-color: $contentBG !important;
+		  a {
+		    color: $brand1;
+		  }
+	    }
+      }
+	}
+
+	.view-content {
+	  .month-view {
+	    .multi-day {
+		  .item {
+		    .monthview {
+			  background: $orange;
+			  min-height: 3.5em;
+		      .contents {
+		        width: auto !important;
+				}
+			  .continues, .cutoff {
+				background: $orange !important;
+
+				.date-display-range{
+				  display: none;
+				}
+		      }
+		    }
+		  }
+        }
+		.single-day {
+		  .item {
+		    .monthview {
+			  background: $orange;
+			  min-height: 3.5em;
+			  .date-display-single {
+			    color: $contentBG;
+			  }
+		    }
+		  }
+        }
+	  }
+
+	  .views-table {
+	    caption {
+	      font-weight: bold;
+		  border-bottom: 3px solid $contentBorder;
+		  padding-bottom: 10px;
+	    }
+	  }
+	}
+
+	.view-content {
+	  .day-view {
+	    .multi-day {
+		  .item {
+		    .dayview {
+		      height: 2.9em;
+			  color: $navBG;
+			  background: $contentBG !important;
+		      .contents {
+		        width: auto !important;
+		      }
+		    }
+		  }
+        }
+	  }
+	}
+}
+
+.calendar-block {
+  margin: 14px 0 !important;
+  border: 1px solid $hr;
+  border-top: 8px solid $orange;
+
+  .block__content {
+    padding: 0 !important;
+
+	.view-header {
+      .block {
+	    background: #ffffff;
+		text-align: center;
+		padding: 10px;
+		color: #555555;
+        border-bottom: 1px solid $hr;
+      }
+
+	  .date-nav-wrapper {
+	    .date-nav {
+		  padding-bottom: 0.1em;
+		}
+	  }
+	}
+
+	.view-footer {
+	  margin: 0 !important;
+	  padding: 5px 0 10px 0;
+	}
+  }
+}

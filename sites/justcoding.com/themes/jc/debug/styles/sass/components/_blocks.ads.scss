@@ -1,0 +1,12 @@
+.block-sidebar-ad {
+  text-align: center;
+}
+
+.l-region--top,
+.l-region--bottom {
+  display: none;
+
+  @include breakpoint($tabSmall) {
+    display: block;
+  }
+}

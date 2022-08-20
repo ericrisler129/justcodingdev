@@ -1,0 +1,62 @@
+@mixin flexreset() {
+  .flexslider {
+    margin: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+  }
+}
+
+@mixin center($axis: "both"){
+  position:absolute;
+  @if $axis == "y"{
+    top:50%;
+    @include translateY(-50%);
+  }
+  @if $axis == "x"{
+    left:50%;
+    @include translateX(-50%);
+  }
+  @if $axis == "both"{
+    top:50%;
+    left:50%;
+    @include translate(-50%, -50%);
+  }
+}
+
+@mixin iconize($bg-color: #000000, $icon-color: #000000) {
+  display: inline-block;
+  vertical-align: middle;
+  position: relative;
+  width: 48px;
+  height: 48px;
+  background-color: $bg-color;
+
+  &:before {
+    @include center(both);
+    @include border-radius(50%);
+    font-size: 1.714em;
+    padding: 7px;
+    color: $icon-color;
+    background-color: #ffffff;
+  }
+}
+
+@mixin lock() {
+  position: relative;
+  padding: 0 0 0 15px;
+
+  .lock-icon {
+    position: absolute;
+    left: -5px;
+
+    i {
+      @include border-radius(50%);
+      font-size: 0.643em;
+      padding: 3px 4px;
+      vertical-align: middle;
+      color: #ffffff;
+      background-color: #cccccc;
+    }
+  }
+}

@@ -1,0 +1,327 @@
+<?php
+
+/**
+ * Implements hook_block_info().
+ */
+function hcpro_issue_browser_block_info() {
+  $blocks = [];
+
+  $blocks['issue_browser'] = [
+    'info' => t('Issue Browser'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  ];
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function hcpro_issue_browser_block_view($block_name = '') {
+
+  $block = [
+    'subject' => '',
+    'content' => _issue_browser_content(),
+  ];
+
+  return $block;
+}
+/**
+ * @return array
+ */
+function _issue_browser_content() {
+  $terms = array_reverse(taxonomy_get_tree(8));
+  $active_tid = $_GET['field_volume_and_issue_tid'];
+  $publication = $_GET['field_publication_tid'];
+  $items = [];
+
+  $years = [
+    // BCCS
+    1 => [
+      15 => 2012,
+      16 => 2013,
+      17 => 2014,
+      18 => 2015,
+      19 => 2016,
+      20 => 2017,
+      21 => 2018,
+      22 => 2019,
+      23 => 2020,
+      24 => 2021,
+      25 => 2022,
+      26 => 2023,
+    ],
+    // BAPC
+    2 => [
+      13 => 2012,
+      14 => 2013,
+      15 => 2014,
+      16 => 2015,
+      17 => 2016,
+      18 => 2017,
+      19 => 2018,
+      20 => 2019,
+      21 => 2020,
+      22 => 2021,
+      23 => 2022,
+      24 => 2023,
+    ],
+    // JCO
+    3 => [
+      14 => 2012,
+      15 => 2013,
+      16 => 2014,
+      17 => 2015,
+      18 => 2016,
+      19 => 2017,
+      20 => 2018,
+      21 => 2019,
+      22 => 2020,
+      23 => 2021,
+      24 => 2022,
+      25 => 2023,
+    ],
+    // JCI
+    4 => [
+      14 => 2012,
+      15 => 2013,
+      16 => 2014,
+      17 => 2015,
+      18 => 2016,
+      19 => 2017,
+      20 => 2018,
+      21 => 2019,
+      22 => 2020,
+      23 => 2021,
+      24 => 2022,
+      25 => 2023
+    ],
+    // JCW
+    5 => [
+      13 => 2012,
+      14 => 2013,
+      15 => 2014,
+      16 => 2015,
+      17 => 2016,
+      18 => 2017,
+      19 => 2018,
+      20 => 2019,
+      21 => 2020,
+      22 => 2021,
+      23 => 2022,
+      24 => 2023
+    ],
+  ];
+
+  $months = [
+    1 => 'January',
+    2 => 'February',
+    3 => 'March',
+    4 => 'April',
+    5 => 'May',
+    6 => 'June',
+    7 => 'July',
+    8 => 'August',
+    9 => 'September',
+    10 => 'October',
+    11 => 'November',
+    12 => 'December',
+  ];
+
+  $publication_nodes = is_numeric($publication) ? taxonomy_select_nodes($publication, FALSE, FALSE) : [];
+
+  foreach ($terms as $term) {
+    if ($term->depth == 0) {
+
+      $year_children = taxonomy_get_children($term->tid);
+      foreach ($year_children as $child_month) {
+        $issue_nids = taxonomy_select_nodes($child_month->tid, FALSE, FALSE);
+        $matches = array_intersect($publication_nodes, $issue_nids);
+
+        if (!empty($matches)) {
+          if (!empty($year_children) && isset($years[$publication][$term->name])) {
+            $year = $years[$publication][$term->name];
+            $items[$year]['data'] = "<a class=\"year-link\" href=\"#\">{$year}</a>";
+            $items[$year]['class'] = ['collapsible', 'collapsed'];
+
+            if ($publication == 3 || $publication == 4) {
+              $entity_type = 'node';
+              $bundle = 'article';
+              $nids = $matches;
+
+              $node_date = db_select('field_revision_field_published', 'f')
+                ->fields('f', ['entity_id', 'field_published_value'])
+                ->condition('entity_type', $entity_type)
+                ->condition('bundle', $bundle)
+                ->condition('entity_id', $nids, 'IN')
+                ->condition('deleted', 0)
+                ->execute()
+                ->fetchAllKeyed();
+
+              $date = new DateTime(reset($node_date));
+              $month = $date->format('F j');
+              $timestamp = strtotime($month . " $year");
+            }
+            else {
+              $month = $months[$child_month->name];
+              $timestamp = strtotime($month . " $year");
+            }
+
+            $active = $active_tid == $child_month->tid ? "active" : "";
+            $items[$year]['children'][$child_month->tid]['timestamp'] = $timestamp;
+
+            $link_args = [
+              'query' => [
+                "field_volume_and_issue_tid" => $child_month->tid,
+                "field_publication_tid" => $_GET['field_publication_tid'],
+                "items_per_page" => 20,
+              ],
+              'attributes' => [
+                'class' => [$active],
+              ],
+            ];
+            $url = url('archives', $link_args);
+            $items[$year]['children'][$child_month->tid]['link'] = "<a href=\"{$url}\" class=\"{$active}\">{$month}</a>";
+            $items[$year]['children'] = _filter_array_by_key($items[$year]['children'], 'timestamp');
+          }
+        }
+      }
+    }
+  }
+  rsort($items);
+
+  $content['issue_browser'] = [
+    '#theme' => "item_list",
+    '#items' => _prepare_issue_browser_items($items),
+    '#title' => "",
+    '#type' => "ul",
+  ];
+
+  return $content;
+}
+
+function _prepare_issue_browser_items($items) {
+  foreach ($items as $i_key => $item) {
+    foreach ($items[$i_key]['children'] as $ch_key => $children) {
+      $items[$i_key]['children'][$ch_key] = $items[$i_key]['children'][$ch_key]['link'];
+    }
+  }
+
+  return $items;
+}
+
+function _filter_array_by_key($ar, $key) {
+  uasort($ar, function ($a1, $a2) use ($key) {
+    if (isset($a1[$key]) && isset($a1[$key])) {
+      $value1 = $a1[$key];
+      $value2 = $a2[$key];
+
+      return ($value1 < $value2) ? -1 : 1;
+    }
+    return FALSE;
+  });
+
+  return $ar;
+}
+
+/**
+ * @param $issue_tid
+ * @param $publication_tid
+ *
+ * @return array
+ */
+function get_issue_pdf($issue_tid, $publication_tid) {
+  if ($issue_tid && $publication_tid) {
+    $query = new EntityFieldQuery();
+
+    $query->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'article')
+      ->propertyCondition('status', 1)
+      //->fieldCondition('field_weight', 'value', 0)
+      ->fieldCondition('field_publication', 'tid', $publication_tid)
+      ->fieldCondition('field_volume_and_issue', 'tid', $issue_tid)
+      ->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT');
+
+    $result = $query->execute();
+
+    if ($result) {
+      $nids = array_keys($result['node']);
+      $nodes = node_load_multiple($nids);
+
+      foreach ($nodes as $node) {
+
+        if (empty($node->field_weight) || $node->field_weight[LANGUAGE_NONE][0]['value'] == 0) {
+          if (isset($node->field_file[LANGUAGE_NONE][0]) || (isset($node->field_print_pdf[LANGUAGE_NONE][0]['value']) && $node->field_print_pdf[LANGUAGE_NONE][0]['value'] == 1) ) {
+
+
+            $iss = $node->field_volume_and_issue['und'][0]['tid'];
+            $vol = taxonomy_get_parents($iss);
+            $vol = reset($vol);
+            $issue = taxonomy_term_load($iss);
+            $date = date('F j, Y', strtotime($node->field_published[LANGUAGE_NONE][0]['value']));
+
+            if ($node->field_file[LANGUAGE_NONE][0]) {
+              $file = $node->field_file[LANGUAGE_NONE][0];
+              return [
+                'file' => file_create_url($file['uri']),
+                'meta' => "Volume {$vol->name}, Issue {$issue->name}, {$date}",
+                'pdfprint' => "/pdf/{$vol->name}/{$issue->name}/print?date=thedate",
+                'node' => "<a href='/node/{$node->nid}/edit'>Edit master</a>",
+              ];
+            }
+            if ($node->field_print_pdf[LANGUAGE_NONE][0]['value'] == 1){
+              return [
+                'meta' => "Volume {$vol->name}, Issue {$issue->name}, {$date}",
+                'pdfprint' => "/pdf/{$vol->name}/{$issue->name}/print?date=thedate",
+                'generate' => 1,
+                'node' => "<a href='/node/{$node->nid}/edit'>Edit master</a>",
+              ];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+function get_issue_pdf_date($issue_tid, $publication_tid) {
+  if ($issue_tid && $publication_tid) {
+    $query = new EntityFieldQuery();
+
+    $query->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'article')
+      ->propertyCondition('status', 1)
+      ->fieldCondition('field_weight', 'value', 0)
+      ->fieldCondition('field_publication', 'tid', $publication_tid)
+      ->fieldCondition('field_volume_and_issue', 'tid', $issue_tid)
+      ->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT');
+
+    $result = $query->execute();
+
+    if ($result) {
+      $nids = array_keys($result['node']);
+      $nodes = node_load_multiple($nids);
+      $date = '';
+      foreach ($nodes as $node) {
+
+        $date = date('F Y', strtotime($node->field_published[LANGUAGE_NONE][0]['value']));
+        if(isset($node->field_print_pdf[LANGUAGE_NONE][0]['value']) && $node->field_print_pdf[LANGUAGE_NONE][0]['value'] == 1) {
+          return [
+            'date' => $date,
+            'print' => 1,
+          ];
+        }
+
+
+      }
+      return [
+        'date' => $date,
+        'print' => 0,
+      ];
+    }
+  }
+
+  return FALSE;
+}

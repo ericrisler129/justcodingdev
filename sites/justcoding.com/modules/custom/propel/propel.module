@@ -1,0 +1,489 @@
+<?php
+
+/**
+ * attach the js file to content form pages for the select_all field behavior.
+ */
+
+function propel_form_alter(&$form, &$form_state, $form_id){
+
+  $form['#attached']['js'][] = array(
+    'data' => drupal_get_path('module', 'propel') . '/propel.js',
+    'type' => 'file',
+  );
+}
+
+function propel_menu() {
+  $items = array();
+
+  $items['admin/config/system/propel-plan'] = array(
+    'title' => 'PROPEL plan name',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('propel_form'),
+    'access arguments' => array('administer users'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+
+}
+
+function propel_form($node, &$form_state) {
+
+  $form['propel_plan_name'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_plan_name', ''),
+    '#title' => t('PROPEL Membership Plan Name'),
+    '#required' => TRUE,
+    '#description' => t('From Customer Central (webauth), enter application PROPEL Plan name.'),
+  );
+
+  $form['propel_rca_propel'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_rca_propel', ''),
+    '#title' => t('RCA Propel Medicare ID'),
+    '#required' => TRUE,
+    '#description' => t('Enter Propel Id. Stage id=183. Live id=179	'),
+  );
+  $form['propel_sso_rca'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_sso_rca', ''),
+    '#title' => t('SSO rca url'),
+    '#required' => TRUE,
+    '#description' => t('SSO url: live = revenuecycleadvisor.com; Stage = rca.h3.scstage.net'),
+  );
+
+
+  $form['propel_crc_propel'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_crc_propel', ''),
+    '#title' => t('CRC - Basic, Plat, Plat Plus'),
+    '#required' => TRUE,
+    '#description' => t('Enter Propel Id. Stage id=102,103,104. Live id=100,101,102'),
+  );
+  $form['propel_sso_crc'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_sso_crc', ''),
+    '#title' => t('SSO crc url'),
+    '#required' => TRUE,
+    '#description' => t('SSO url: live = credentialingresourcecenter.com; Stage = crc.h3.scstage.net'),
+  );
+
+  $form['propel_acdis_propel'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_acdis_propel', ''),
+    '#title' => t('ACDIS Plan Id'),
+    '#required' => TRUE,
+    '#description' => t('Enter Propel Id. Stage id=10. Live id=11'),
+  );
+  $form['propel_sso_acdis'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_sso_acdis', ''),
+    '#title' => t('SSO acdis url'),
+    '#required' => TRUE,
+    '#description' => t('SSO url: Live = acdis.org; Stage = acdis.h3.scstage.net'),
+  );
+
+  $form['propel_nahri_propel'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_nahri_propel', ''),
+    '#title' => t('Nahri Plan Id'),
+    '#required' => TRUE,
+    '#description' => t('Enter Propel Id. Stage id=169. Live id=161'),
+  );
+  $form['propel_sso_nahri'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_sso_nahri', ''),
+    '#title' => t('SSO nahri url'),
+    '#required' => TRUE,
+    '#description' => t('SSO url: Live = nahri.org; Stage = nahri.h3.scstage.net'),
+  );
+
+  $form['propel_propel_pro'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_propel_pro', ''),
+    '#title' => t('Propel pro'),
+    '#required' => TRUE,
+    '#description' => t('Enter Propel Pro Ids. Dev:251,248,249,250 Live:238,236,237,239 - Changes made to Ids will need code changes to buttons'),
+  );
+  $form['propel_sso_acpg'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_sso_acpg', ''),
+    '#title' => t('SSO acpg url'),
+    '#required' => TRUE,
+    '#description' => t('SSO url: Live = pro.acdis.org; Stage = acpg.h3.scstage.net'),
+  );
+
+  $form['propel_lll_plans'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_lll_plans', ''),
+    '#title' => t('Loyal Listener plans'),
+    '#required' => TRUE,
+    '#description' => t('to include LL Plans 243,244,245. Live - 232,233,234,235'),
+  );
+  $form['propel_company_excludes'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('propel_company_excludes', ''),
+    '#title' => t('Disable "Access My Online Learning" button'),
+    '#required' => TRUE,
+    '#description' => t('to disable add companies "Company A,Company B,Company C"'),
+  );
+  return system_settings_form($form);
+}
+
+/*
+ * Calendar Year and Month selection.
+ * Must render this custom form with a function call in the view header.
+ * <?php $form = drupal_get_form('propel_get_event_view_month_filter'); print render($form); ?>
+ */
+function propel_get_event_view_month_filter($form, &$form_state) {
+  $form = array();
+  $year = date('Y');
+  $year_options = array(
+    $year => t($year),
+    $year + 1 => t($year + 1),
+    $year + 2 => t($year + 2),
+    $year + 3 => t($year + 3),
+  );
+  $month = date('m');
+  $month_options = array(
+    '1' => 'January',
+    '2' => 'February',
+    '3' => 'March',
+    '4' => 'April',
+    '5' => 'May',
+    '6' => 'June',
+    '7' => 'July',
+    '8' => 'August',
+    '9' => 'September',
+    '10' => 'October',
+    '11' => 'November',
+    '12' => 'December',
+  );
+  $form['event-date-container'] = array(
+    '#type' => 'container',
+    '#prefix' => '<div id="event-date-container">',
+    '#suffix' => '</div>',
+  );
+  $form['event-date-container']['year'] = array(
+    '#title' => t('Select Year'),
+    '#type' => 'select',
+    '#options' => $year_options,
+    '#prefix' => '<div id="event-year">',
+    '#default_value' => isset($_SESSION['event']['year']) ? $_SESSION['event']['year'] : $year,
+    '#suffix' => '</div>',
+  );
+  $form['event-date-container']['month'] = array(
+    '#title' => t('Select Month'),
+    '#type' => 'select',
+    '#options' => $month_options,
+    '#prefix' => '<div id="event-month">',
+    '#default_value' => isset($_SESSION['event']['month']) ? $_SESSION['event']['month'] : $month,
+    '#suffix' => '</div>',
+  );
+  $form['event-date-container']['submit_form'] = array(
+    '#type' => 'submit',
+    '#value' => t('Apply'),
+    '#submit' => array('_propel_event_view_month_submit'),
+  );
+  unset($_SESSION['event']);
+  drupal_add_css(drupal_get_path('module', 'propel') . '/propel.css');
+  return $form;
+}
+
+function _propel_event_view_month_submit($form, $form_state) {
+  global $base_url;
+  $_SESSION['event']['year'] = $form_state['values']['year'];
+  $_SESSION['event']['month'] = $form_state['values']['month'];
+  drupal_goto('calendar-events/month/' . $form_state['values']['year'] . '-' . $form_state['values']['month']);
+}
+
+/*
+ * Calendar Year, Month and Date selection.
+ * Must render this custom form with a function call in the view header.
+ * <?php $form = drupal_get_form('propel_get_event_view_date_filter'); print render($form); ?>
+ */
+
+function propel_get_event_view_date_filter($form, &$form_state) {
+  $form = array();
+  $year = date('Y');
+  $year_options = array(
+    $year => t($year),
+    $year + 1 => t($year + 1),
+    $year + 2 => t($year + 2),
+    $year + 3 => t($year + 3),
+  );
+  $month = date('m');
+  $month_options = array(
+    '1' => 'January',
+    '2' => 'February',
+    '3' => 'March',
+    '4' => 'April',
+    '5' => 'May',
+    '6' => 'June',
+    '7' => 'July',
+    '8' => 'August',
+    '9' => 'September',
+    '10' => 'October',
+    '11' => 'November',
+    '12' => 'December',
+  );
+  $date = date('d');
+  $date_options =array(
+    '1' => '1',
+	'2' => '2',
+	'3' => '3',
+	'4' => '4',
+	'5' => '5',
+	'6' => '6',
+	'7' => '7',
+	'8' => '8',
+	'9' => '9',
+	'10' => '10',
+	'11' => '11',
+	'12' => '12',
+	'13' => '13',
+	'14' => '14',
+	'15' => '15',
+	'16' => '16',
+	'17' => '17',
+	'18' => '18',
+	'19' => '19',
+	'20' => '20',
+	'21' => '21',
+	'22' => '22',
+	'23' => '23',
+	'24' => '24',
+	'25' => '25',
+	'26' => '26',
+	'27' => '27',
+	'28' => '28',
+	'29' => '29',
+	'30' => '30',
+	'31' => '31',
+  );
+  $form['event-date-container'] = array(
+    '#type' => 'container',
+    '#prefix' => '<div id="event-date-container">',
+    '#suffix' => '</div>',
+  );
+  $form['event-date-container']['year'] = array(
+    '#title' => t('Select Year'),
+    '#type' => 'select',
+    '#options' => $year_options,
+    '#prefix' => '<div id="event-year">',
+    '#default_value' => isset($_SESSION['event']['year']) ? $_SESSION['event']['year'] : $year,
+    '#suffix' => '</div>',
+  );
+  $form['event-date-container']['month'] = array(
+    '#title' => t('Select Month'),
+    '#type' => 'select',
+    '#options' => $month_options,
+    '#prefix' => '<div id="event-month">',
+    '#default_value' => isset($_SESSION['event']['month']) ? $_SESSION['event']['month'] : $month,
+    '#suffix' => '</div>',
+  );
+  $form['event-date-container']['date'] = array(
+    '#title' => t('Select Date'),
+    '#type' => 'select',
+    '#options' => $date_options,
+    '#prefix' => '<div id="event-date">',
+    '#default_value' => isset($_SESSION['event']['date']) ? $_SESSION['event']['date'] : $month,
+    '#suffix' => '</div>',
+  );
+  $form['event-date-container']['submit_form'] = array(
+    '#type' => 'submit',
+    '#value' => t('Apply'),
+    '#submit' => array('_propel_event_view_date_submit'),
+  );
+  unset($_SESSION['event']);
+  drupal_add_css(drupal_get_path('module', 'propel') . '/propel.css');
+  return $form;
+}
+
+function _propel_event_view_date_submit($form, $form_state) {
+  global $base_url;
+  $_SESSION['event']['year'] = $form_state['values']['year'];
+  $_SESSION['event']['month'] = $form_state['values']['month'];
+  $_SESSION['event']['date'] = $form_state['values']['date'];
+  drupal_goto('calendar-events/day/' . $form_state['values']['year'] . '-' . $form_state['values']['month'] . '-' . $form_state['values']['date']);
+}
+
+/**
+ * Hook to restrict access to propel views only for "PROPEL Coding" role.
+ */
+
+function propel_views_pre_render($view) {
+  if (user_has_role_name('administrator') || user_has_role_name('editor')) return;
+
+  if (($view->name === 'propel_ate') || ($view->name === 'calendar' && $view->current_display != 'block_1')){
+	$options = array('query' => drupal_get_destination());
+	if (user_has_role_name("PROPEL Coding")) {
+      return;
+	}
+	else {
+      drupal_goto('membership-check', $options);
+    }
+  }
+}
+
+/**
+ * Hook to Disable the top region block and bottom region block for Role specified.
+ */
+
+function propel_block_list_alter(&$blocks) {
+  foreach ($blocks as $key => $block) {
+	if (($block->region == 'top') || ($block->region == 'bottom')) {
+	  if (user_has_role_name("PROPEL Coding")) {
+        unset($blocks[$key]);
+	  }
+    }
+  }
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function propel_block_info() {
+  $blocks['propel_profiles_block'] = array(
+    // The name that will appear in the block list.
+    'info' => t('My Propel Profiles Block'),
+    // Default setting.
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  return $blocks;
+}
+
+
+/**
+ * Implements hook_block_view().
+ */
+function propel_block_view($delta = '') {
+  // The $delta parameter tells us which block is being requested.
+  switch ($delta) {
+    case 'propel_profiles_block':
+
+      global $user;
+      $mail = $user->mail;
+
+      $block['subject'] = t('My Propel Profiles');
+
+      $block['content'] = '';
+      $exclusionsC = explode (",",variable_get('propel_company_excludes'));
+      $company = $_SESSION['webauth']['owner_company'];
+
+      if (!in_array($company, $exclusionsC)) {
+         $block['content'] = '<div class="button" style="margin-bottom: 10px;"><a href="https://propel.hcpro.com/" id="lms" target="_blank" class="button-orange-rounded"><b>Access My Online Learning</b></a></div>';
+      }
+
+
+      $sub_ids = propel_check_membership($mail);
+      $exclusions = explode(",",variable_get('propel_lll_plans'));
+      foreach($exclusions as $id){
+        if(in_array($id,$sub_ids)) {
+          $block['content'] .= '<div class="button" style="margin-bottom: 10px;"><a href="https://loyallistener.hcpro.com/#/login" id="lms" target="_blank" class="button-orange-rounded"><b>LLL Propel</b></a></div>';
+          break;
+        }
+      }
+
+      $RCA = variable_get('propel_rca_propel');
+      $RCA_link = variable_get('propel_sso_rca');
+      if (in_array($RCA, $sub_ids)) {
+        $block['content'] .= '<div class="button" style="margin-bottom: 10px;"><a href="/sso-authentication/'.$RCA_link.'" id="lms" target="_blank" class="button-orange-rounded"><b>RCA Propel Medicare</b></a></div>';
+      }
+
+      $ACDIS = variable_get('propel_acdis_propel');
+      $ACDIS_link = variable_get('propel_sso_acdis');
+      if (in_array($ACDIS, $sub_ids)) {
+        $block['content'] .= '<div class="button" style="margin-bottom: 10px;"><a href="/sso-authentication/'.$ACDIS_link.'" id="lms3" target="_blank" class="button-orange-rounded"><b>ACDIS</b></a></div>';
+      }
+
+      $NAHRI = variable_get('propel_nahri_propel');
+      $NAHRI_link = variable_get('propel_sso_nahri');
+      if (in_array($NAHRI, $sub_ids)) {
+       $block['content'] .= '<div class="button" style="margin-bottom: 10px;"><a href="/sso-authentication/'.$NAHRI_link.'" id="lms3" target="_blank" class="button-orange-rounded"><b>NAHRI</b></a></div>';
+      }
+
+      //Stage: ST Pocket Guide Inpatient = 248, ST Pocket Guide Outpatient = 249, ST Pocket Guide Physician = 250
+      //Production: ACDIS PRO Inpatient = 236, ACDIS PRO Outpatient = 237, ACDIS PRO Physician = 239
+
+      $ACPG = variable_get('propel_propel_pro');
+      $ACPG_link = variable_get('propel_sso_acpg');
+      $exclusions = explode(",",$ACPG);
+      foreach($exclusions as $id){
+        if (in_array($id, $sub_ids)) {
+
+          if($id == 251 || $id == 238) {
+            $bname = 'JustCoding PRO';
+            $block['content'] .= '<div class="button" style="margin-bottom: 10px;"><a href="/sso-authentication/'.$ACPG_link.'" id="lms" target="_blank" class="button-orange-rounded"><b>'. $bname .'</b></a></div>';
+          }
+          if($id == 248 || $id == 236) {
+            $bname = 'ACDIS PRO Inpatient';
+            $block['content'] .= '<div class="button" style="margin-bottom: 10px;"><a href="/sso-authentication/'.$ACPG_link.'" id="lms" target="_blank" class="button-orange-rounded"><b>'. $bname .'</b></a></div>';
+          }
+          if ($id == 249 || $id == 237){
+            $bname = 'ACDIS PRO Outpatient';
+            $block['content'] .= '<div class="button" style="margin-bottom: 10px;"><a href="/sso-authentication/'.$ACPG_link.'" id="lms" target="_blank" class="button-orange-rounded"><b>'. $bname .'</b></a></div>';
+          }
+          if ($id == 250 || $id == 239){
+            $bname = 'ACDIS PRO Physician';
+            $block['content'] .= '<div class="button" style="margin-bottom: 10px;"><a href="/sso-authentication/'.$ACPG_link.'" id="lms" target="_blank" class="button-orange-rounded"><b>'. $bname .'</b></a></div>';
+          }
+        }
+      }
+
+      $CRC = variable_get('propel_crc_propel');
+      $CRC_link = variable_get('propel_sso_crc');
+      $exclusions = explode(",",$CRC);
+      foreach($exclusions as $id){
+        if (in_array($id, $sub_ids)) {
+        $block['content'] .= '<div class="button" style="margin-bottom: 10px;"><a href="/sso-authentication/'.$CRC_link.'" id="lms" target="_blank" class="button-orange-rounded"><b>Credentialing Resource Center</b></a></div>';
+          break;
+        }
+      }
+  }
+
+  return $block;
+}
+
+/**
+ * Implements membership lookup.
+ */
+function propel_check_membership($email){
+  $profile = blr_webauth_api_call("users", "GET", array("expand" => "customers", "filter[email]" => $email));
+  $customer_id = blr_webauth_api_call("customers", "GET", array("filter[email]" => $profile[0]["customers"][0]["email"]));
+  //$memberships = blr_webauth_api_call("memberships?expand=effectiveDates", "GET", array('filter' => [
+  $memberships = blr_webauth_api_call("customers/{$customer_id[0]['id']}/memberships?expand=effectiveDates", "GET", array('filter' => [
+    'customer_id' => $customer_id[0]['id'],
+    'owner_is_member' => 'true',
+    'status' => 'active',
+    'is_deleted' => 0
+  ]));
+
+  $plan_ids = [];
+  $date_now =date("Y-m-d");
+
+  foreach ($memberships as $membership) {
+
+    if (isset($membership["expiration_date"])) {
+      if ($date_now <= $membership["expiration_date"]) {
+        $plan_ids[] = $membership['plan_id'];
+      }
+    } else if ($membership["effectiveDates"]) {
+      foreach ($membership["effectiveDates"] as $date) {
+        if($date_now >= $date["start_date"] ) {
+          if ( empty($date["stop_date"])) {
+            $plan_ids[] = $date['plan_id'];
+            break 1;
+          }
+          if ($date_now < $date["stop_date"] ) {
+            $plan_ids[] = $membership['plan_id'];
+            break 1;
+          }
+        }
+      }
+    } else {
+      $plan_ids[] = $membership['plan_id'];
+    }
+  }
+  return $plan_ids;
+}

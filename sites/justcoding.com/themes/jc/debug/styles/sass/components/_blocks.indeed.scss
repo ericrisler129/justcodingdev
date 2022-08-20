@@ -1,0 +1,13 @@
+.block-indeed {
+  #indeed_widget_wrapper {
+    max-width: 100%;
+    height: auto;
+
+    #indeed_jobform {
+      #qc,
+      #lc {
+        float: none;
+      }
+    }
+  }
+}

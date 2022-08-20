@@ -1,0 +1,31 @@
+.block--views-propel-ate-block-1 {
+  margin: 0 0 $gutterSize;
+  border: 1px solid $hr;
+  overflow: hidden;
+
+  .title-wrapper {
+    border-top: 8px solid $orange;
+  }
+
+  .block__content {
+    padding: 0 !important;
+
+	.view-header {
+	  padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid $hr;
+	}
+
+	.attachment {
+	  padding-top: 20px;
+	}
+
+	.view-content {
+	  padding: 0 20px;
+	}
+
+	.view-footer {
+	  padding-bottom: 20px;
+	}
+  }
+}

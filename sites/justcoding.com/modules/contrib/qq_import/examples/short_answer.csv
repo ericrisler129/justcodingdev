@@ -1,0 +1,4 @@
+"guid", "question", "title", "answer", "evaluation code"
+"sa1", "Code name of ubuntu 10.04", "Code name of ubuntu 10.04", "lucid", 1
+"sa2", "Name of the default theme in drupal 6", "Name of the default theme in drupal 6", "garland", 2
+"sa3", "PHP stands for", "PHP stands for", "PHP Hypertext preprocessor", 1

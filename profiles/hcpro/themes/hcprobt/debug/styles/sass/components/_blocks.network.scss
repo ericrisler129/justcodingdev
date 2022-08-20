@@ -1,0 +1,40 @@
+.block.branded.brand-pink {
+  &.block-network-events,
+  &.block-network-webcasts {
+    margin: 0 0 $gutterSize;
+
+    .block__content {
+      padding: 0;
+
+      h3 {
+        font-size: $FSbase;
+        padding: 5px 10px;
+        margin: 0;
+        background-color: $networkLight;
+      }
+
+      .event-item {
+        padding: 5px 0;
+        border-bottom: 1px dotted #000000;
+
+        &:last-child {
+          border: none;
+        }
+
+        a {
+          font-size: $FSsmall;
+          font-weight: $primaryFontWeightMed;
+          color: $copy;
+
+          &:hover {
+            color: lighten($copy, 15);
+          }
+        }
+      }
+    }
+
+    &:last-child {
+      margin: 0;
+    }
+  }
+}

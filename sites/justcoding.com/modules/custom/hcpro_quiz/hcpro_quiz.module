@@ -1,0 +1,389 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function hcpro_quiz_menu() {
+
+  $items = array();
+
+  $items['admin/settings/migrate-quiz-results'] = array(
+    'title' => 'Migrate quiz results',
+    'page callback' => 'hcpro_quiz_migrate_users',
+    'access arguments' => array('administer blr webauth settings'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function hcpro_quiz_block_info() {
+  $blocks = array();
+
+  $blocks['quiz_ce_sidebar'] = array(
+    'info' => t('Quiz Sidebar - CE'),
+    'cache' => DRUPAL_CACHE_PER_USER,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function hcpro_quiz_block_view($block_name = '') {
+  $content = _quiz_sidebar_content();
+  /*
+  $related_articles_block = block_load('views', 'articles-block_1');
+  $content += _block_get_renderable_array(_block_render_blocks(array($related_articles_block)));
+  */
+
+  $block = array(
+    'subject' => '',
+    'content' => $content,
+  );
+
+  return $block;
+}
+
+/***
+ * Implements hook_form_alter().
+ */
+function hcpro_quiz_form_alter(&$form, &$form_state, $form_id) {
+  if($form_id == 'quiz_question_answering_form') {
+    $form['navigation']['submit']['#attributes']['class'] = array(
+      'button-input',
+      'button-input-green',
+    );
+
+    $form['navigation']['back']['#attributes']['class'] = array(
+      'button-input',
+      'button-input-green',
+    );
+
+    $form['navigation']['back']['#attributes']['id'] = '';
+  }
+
+  if($form_id == 'quiz_start_quiz_button_form') {
+    //dpm($form);
+  }
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function hcpro_quiz_theme_registry_alter(&$theme_registry) {
+  $theme_registry['quiz_take_summary']['function'] = 'hcpro_quiz_quiz_take_summary';
+  $theme_registry['quiz_result']['function'] = 'hcpro_quiz_quiz_result';
+}
+
+/**
+ * Theme the result page.
+ *
+ * @param $quiz
+ *  The quiz node object.
+ * @param $questions
+ *  The questions array as defined by _quiz_get_answers.
+ * @param $score
+ *  Array of score information as returned by quiz_calculate_score().
+ * @param $summary
+ *  Filtered text of the summary.
+ * @return
+ *  Themed html.
+ *
+ * @ingroup themeable
+ */
+function hcpro_quiz_quiz_result($variables) {
+  global $user;
+  $quiz = $variables['quiz'];
+  $questions = $variables['questions'];
+  $score = $variables['score'];
+  $summary = $variables['summary'];
+  $quiz_result = quiz_result_load($variables['result_id']);
+  $account = $variables['account'];
+  $is_passed = $quiz->pass_rate <= $score['percentage_score'];
+  $is_free_user = user_has_role(8);
+
+  drupal_set_title("Thank you for taking the " . filter_xss($quiz->title) . " Quiz!");
+
+  // Create Certificate Links
+  if (!empty($quiz->field_credits[LANGUAGE_NONE])) {
+    $fcs = $quiz->field_credits[LANGUAGE_NONE];
+
+    foreach($fcs as $key => $fc) {
+      $credits[$key] = field_collection_item_load($fc['value']);
+    }
+  }
+
+  if (isset($credits)) {
+    foreach($credits as $credit) {
+      $file_uri = $credit->field_file['und'][0]['uri'];
+      $file_path = file_create_url($file_uri);
+
+      switch($credit->field_certificate_type[LANGUAGE_NONE][0]['tid']) {
+        case 544:
+          $ACDIS_link = $file_path;
+          break;
+        case 545:
+          $AAPC_link = $file_path;
+          break;
+        case 546:
+          $AHIMA_link = $file_path;
+          break;
+        case 579:
+          $AHIMAACDIS_link = $file_path;
+          break;
+      }
+    }
+  }
+
+  if (!$score['is_evaluated'] && empty($_POST)) {
+    $msg = t('Parts of this @quiz have not been evaluated yet. The score below is not final.', array('@quiz' => QUIZ_NAME));
+    drupal_set_message($msg, 'warning');
+  }
+
+  $score_out = '';
+  //if (quiz_feedback_can_review('score', $quiz_result)) {
+    $score_out .= '<div class="quiz-score"><div><p>' . t('You have completed the quiz with a score of %score %.&nbsp;', array('%score' => $score['percentage_score'])) . '</p></div>';
+
+    $is_passed ?
+      $score_out .= "<div id='quiz_summary' class='quiz-passfail quiz-passed'>{$summary['passfail']}</div></div>" :
+      $score_out .= "<div id='quiz_summary' class='quiz-passfail quiz-failed'>{$summary['passfail']}</div></div>";
+  //}
+
+  $path = drupal_get_path_alias('node/'. $quiz->nid);
+  $retake_path = '/' . $path . '/take';
+
+  $score_out .= '<div class="button button-retake"><a class="button-red" href="' . $retake_path . '">Retake Quiz</a></div>';
+
+
+  $output = '';
+
+  if ($is_free_user)
+    $output .= '<p>Did you know that JustCoding Basic and Platinum members can earn CE credits taking our informative quizzes?</p>';
+
+  $output .= '<div class="quiz-certificate-buttons group-buttons">';
+  // Generate certificate links if passed
+  if ($is_passed) {
+    if (isset($AHIMA_link)) {
+      $output .= '<div class="button"><a class="button-green" target="_blank" href="' . $AHIMA_link . '">Download AHIMA Certificate</a></div>';
+    }
+
+    if (isset($ACDIS_link)) {
+      $output .= '<div class="button"><a class="button-green" target="_blank" href="' . $ACDIS_link . '">Download ACDIS Certificate</a></div>';
+    }
+
+    if (isset($AAPC_link)) {
+      $output .= '<div class="button"><a class="button-green" target="_blank" href="' . $AAPC_link . '">Download AAPC Certificate</a></div>';
+    }
+
+    if (isset($AHIMAACDIS_link)) {
+      $output .= '<div class="button"><a class="button-green" target="_blank" href="' . $AHIMAACDIS_link . '">Download ACDIS/AHIMA Certificate</a></div>';
+    }
+  }
+  $output .= '</div>';
+
+  $output .= '<div class="quiz-navigation-buttons group-buttons">';
+
+  $is_free_user ?
+    $output .= '<div class="button"><a class="button-green" href="https://www.hcmarketplace.com/justcoding-com?code=SMHIM1ZA1" target="_blank">Subscribe</a></div>' :
+    $output .= '<div class="button"><a class="button-brand1" href="/quizzes/category/87%2B88">CE Quizzes</a></div>';
+
+  $output .= '<div class="button"><a class="button-brand1" href="/quizzes/category/547">Free Quizzes</a></div>';
+  $output .= '<div class="button"><a class="button-brand1" href="/quizzes/my-quizzes">My Quizzes</a></div>';
+  $output .= '</div>';
+
+  return $score_out . $output;
+}
+
+function hcpro_quiz_preprocess_node(&$vars) {
+  $node = $vars['node'];
+
+  if ($node->type == 'quiz') {
+    $quiz_type_tid = isset($node->field_quiz_type[0]['tid']) ? $node->field_quiz_type[0]['tid'] : $node->field_quiz_type[LANGUAGE_NONE][0]['tid'];
+
+    if ($quiz_type_tid == 87 || $quiz_type_tid == 88) {
+      global $user;
+      $uid = $user->uid;
+
+      $quiz_status = get_quiz_status($uid, $node);
+
+      $vars['ce_quiz_status'] = array(
+        '#prefix' => "<div class='quiz-status'>",
+        '#suffix' => "</div>",
+        'result_status' => array(
+          '#prefix' => "<div class='result-status status-{$quiz_status}'>",
+          '#suffix' => "</div>",
+          'not_taken' => array(
+            '#markup' => "<div class='status-2'>Not Taken</div>",
+          ),
+          'passed' => array(
+            '#markup' => "<div class='status-1'>Passed</div>",
+          ),
+          'failed' => array(
+            '#markup' => "<div class='status-0'>Failed</div>",
+          ),
+        ),
+        'quiz_button' => array(
+          '#theme' => "link",
+          '#path' => "/node/{$node->nid}/take",
+          '#text' => "Take This Quiz",
+          '#prefix' => "<div class='button'>",
+          '#suffix' => "</div>",
+          '#options' => array(
+            'attributes' => array(
+              'class' => 'button-yellow',
+            ),
+            'html' => FALSE,
+          ),
+        ),
+      );
+
+      if ($quiz_status == 0) {
+        $vars['ce_quiz_status']['quiz_button']['#text'] = "Retake Quiz";
+        $vars['ce_quiz_status']['quiz_button']['#options']['attributes']['class'] = "button-red";
+      } elseif ($quiz_status == 1) {
+        $vars['ce_quiz_status']['quiz_button']['#text'] = "Get Certificate";
+        $vars['ce_quiz_status']['quiz_button']['#options']['attributes']['class'] = "button-green";
+        $vars['ce_quiz_status']['quiz_button']['#path'] = "/quizzes/my-quizzes";
+      }
+
+      $vars['ce_quiz_status'] = drupal_render($vars['ce_quiz_status']);
+    }
+  }
+}
+
+/**
+ * @param $uid
+ * @param $node
+ * @return int
+ */
+function get_quiz_status($uid, $node) {
+  if (quiz_is_passed($uid, $node->nid, $node->vid)) {
+    return 1;
+  } else {
+    $result_data = quiz_get_score_data(array($node->nid), $uid);
+    $score = $result_data[$node->vid]->percent_score;
+    return ($score === null) ? 2 : 0;
+  }
+}
+
+/**
+ * Content for CE quiz sidebar
+ * @return array
+ */
+function _quiz_sidebar_content() {
+  $credits = get_quiz_credits(arg(1));
+  $credits = !empty($credits) ? $credits : array("No Credits");
+
+  global $user;
+  $username = ucfirst($user->name);
+
+  $content = array(
+    'intro' => array(
+      '#markup' => "<p class='infobox-intro'>Good Luck, {$username}!</p>",
+    ),
+    'credits' => array(
+      '#prefix' => "<p>Passing this quiz will earn you:</p>",
+      'credit_list' => array(
+        '#theme' => "item_list",
+        '#type' => "ul",
+        '#items' => $credits,
+      ),
+    ),
+    'details' => array(
+      '#markup' => "<p>There is no time limit so be sure to take as much time as you need to correctly answer each question.</p>
+                    <p>At the end of your quiz, you will receive your score and if you passed, you will be able to download your certificate! If you don't have time to download your certificate today, you can return to JustCoding.com anytime and access your certificates from the My Quizzes area.</p>
+                    <p>If you have any difficulties taking this quiz or receiving your certificate, please contact our Customer Service Department.</p>",
+    )
+  );
+
+  return $content;
+}
+
+function get_quiz_credits($nid) {
+  $nid = is_numeric($nid) ? $nid : array();
+  $node = node_load($nid);
+  $fcidsarray = field_get_items('node', $node, 'field_credits');
+  $credits = array();
+  $fcids = array();
+
+  if (!empty($fcidsarray)) {
+    foreach ($fcidsarray as $fc) {
+      $fcids[] = $fc['value'];
+    }
+
+    $fc_items = field_collection_item_load_multiple($fcids);
+
+    foreach ($fc_items as $item) {
+      $term = field_get_items('field_collection_item', $item, 'field_certificate_type');
+      $term = $term[0]['tid'];
+      $term = taxonomy_term_load($term);
+      $name = $term->name;
+      $value = field_get_items('field_collection_item', $item, 'field_credits_value');
+      $value = $value[0]['value'];
+
+      $credits[] = "{$value} Credit {$name}";
+    }
+  }
+
+  return $credits;
+}
+
+/**
+ * Prevent Quiz results from disappearing when quiz is updated
+ * @param $view
+ * @param $query
+ */
+function hcpro_quiz_views_query_alter(&$view, &$query) {
+  if (isset($view->display_handler->display->id) && $view->name == "quizzes" && $view->display_handler->display->id == "block_2") {
+    $query->table_queue['quiz_node_results']['join']->left_field = "nid";
+    $query->table_queue['quiz_node_results']['join']->field = "nid";
+    $query->table_queue['quiz_node_results']['join']->definition['left_field'] = "nid";
+    $query->table_queue['quiz_node_results']['join']->definition['field'] = "nid";
+  }
+}
+
+/**
+ * Helper to migrate quiz results.
+ */
+function hcpro_quiz_migrate_users() {
+  $user_mapping = [
+    20186 => 25417,
+    19973 => 25394,
+    18978 => 25395,
+    22442 => 25396,
+    18691 => 25397,
+    23579 => 25399,
+    17842 => 25400,
+    20274 => 25402,
+    22900 => 25403,
+    20281 => 25405,
+    21093 => 25407,
+    21030 => 25408,
+    20276 => 25393,
+    24302 => 25398,
+    21040 => 25401,
+    20403 => 25404,
+    20280 => 25406,
+    20277 => 25409,
+    20275 => 25410,
+    19501 => 25411,
+    18954 => 25412,
+    24323 => 25413,
+    22899 => 25414,
+    20278 => 25415,
+    12684 => 25416,
+  ];
+  foreach ($user_mapping as $old_uid => $new_uid) {
+    db_update('quiz_node_results')
+    ->condition('uid', $old_uid)
+    ->fields(['uid' => $new_uid])
+    ->execute();
+  }
+  return t('Quiz result successfully migrated.');
+}

@@ -1,0 +1,4 @@
+
+Quiz Questions Import 6.x-1.0, 2010-9-26
+------------------------------
+Initial release of qq_import module, supporting Drupal 6.x.

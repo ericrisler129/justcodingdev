@@ -1,0 +1,17 @@
+.node {
+  &.article-detail {
+    padding: 0 0 $gutterSize;
+
+    .field-name-title {
+      h1 {
+        font-size: $FSheading;
+        color: $nodeTitlesLink;
+      }
+    }
+
+    .group-details {
+      padding: 0 0 10px;
+      border-bottom: 1px solid $copy;
+    }
+  }
+}

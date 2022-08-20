@@ -1,0 +1,35 @@
+.propel-homepage-block {
+  border-top: 1px solid $contentBorder;
+
+  .block__content {
+    padding: 0 !important;
+
+    .view-display-id-block {
+      .view-header {
+	    padding: 20px;
+	    border-bottom: 1px solid $contentBorder;
+	    text-align: center;
+		color: $brand2;
+	  }	  
+
+	  .views-row {
+	    padding: 0 15px;
+	    margin-bottom: 15px;
+
+		.views-field-php-1 {
+	      font-size: $FSlarge;
+          font-weight: bold;
+	      margin-bottom: 5px;
+	    }
+		.views-field-type {
+		  color: $inputBorder;
+		}
+		.views-field-php, .views-field-field-propel-event-date {
+		  font-style: italic;
+		  color: $brand2;
+		  font-size: $FSsmall;
+		}
+      }
+    }
+  }
+}

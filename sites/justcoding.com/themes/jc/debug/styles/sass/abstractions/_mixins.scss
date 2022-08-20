@@ -1,0 +1,12 @@
+@mixin infobox($border: left) {
+  background-color: $infobox;
+  padding: 5px 10px;
+
+  @if $border == "left"{
+    border-left: 3px solid $headings;
+  }
+
+  @if $border == "top"{
+    border-top: 3px solid $headings;
+  }
+}

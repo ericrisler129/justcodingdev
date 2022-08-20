@@ -1,0 +1,11 @@
+
+.propel-get-event-view-month-filter .form-wrapper .form-type-select, .propel-get-event-view-date-filter .form-wrapper .form-type-select{
+  float: left;
+  margin: 0 10px;
+}
+.propel-get-event-view-month-filter .form-wrapper .form-type-select .form-select, .propel-get-event-view-date-filter .form-wrapper .form-type-select .form-select{
+  width: 100px;
+}
+.propel-get-event-view-month-filter .form-wrapper .form-submit, .propel-get-event-view-date-filter .form-wrapper .form-submit{
+  margin: 18px 10px;
+}

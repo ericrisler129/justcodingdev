@@ -1,0 +1,4 @@
+name = "JC Pager Plugins"
+description = Custom sorting for pages.
+package = "Custom"
+core = 7.x

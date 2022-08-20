@@ -1,0 +1,63 @@
+.page-membership-check,
+.page-user-login {
+  .l-content {
+    .page-title {
+      padding: 0 0 15px;
+
+      h1 {
+        font-size: $FSdefault;
+      }
+    }
+
+    .subheading,
+    .block-title {
+      font-size: 1.714em;
+      font-weight: bold;
+      color: $brand1;
+    }
+
+    .user-login {
+      .form-actions {
+        text-align: center;
+        margin: 35px 0 20px;
+      }
+    }
+
+    .register-links {
+      .button {
+        text-align: center;
+        width: 46%;
+        margin: 1%;
+      }
+    }
+
+    .upgrade-wrapper {
+      .upgrade-copy {
+        float: left;
+        width: 78%;
+
+        p {
+          float: none;
+          width: 100%;
+          margin: 15px 0;
+        }
+      }
+
+      .upgrade-links {
+        width: 22%;
+
+        .upgrade-number {
+          text-align: center;
+          width: auto;
+          float: none;
+          display: inline-block;
+          margin: 15px 0;
+        }
+
+        .button {
+          margin: 15px 0 !important;
+        }
+      }
+    }
+  }
+}

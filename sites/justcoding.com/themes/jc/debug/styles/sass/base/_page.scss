@@ -1,0 +1,35 @@
+body {
+  font-size: 87.5%;
+}
+
+p {
+  font-size: $FSbase;
+}
+
+a,
+a:active,
+a:visited {
+  color: $nodeTitlesLink;
+
+  &:hover {
+    color: lighten($nodeTitlesLink, 20);
+  }
+}
+
+.l-header {
+  background-color: $headerBG;
+}
+
+.l-main {
+  .main-title-wrapper {
+    margin: 0 0 10px;
+
+    .front & {
+      display: none;
+    }
+
+    .main-h1 {
+      color: $copy;
+    }
+  }
+}

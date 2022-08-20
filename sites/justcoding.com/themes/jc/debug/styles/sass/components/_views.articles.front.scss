@@ -1,0 +1,48 @@
+.block-articles-front {
+  border-top: 1px solid $contentBorder;
+
+  .panel-panel {
+    .inside {
+      margin: 0;
+    }
+
+    &.panel-col-first {
+      border-right: 1px solid $contentBorder;
+
+      .view {
+        margin: 0 $gutterSize 0 0;
+      }
+    }
+
+    &.panel-col-last {
+      .view {
+        margin: 0 0 0 $gutterSize;
+      }
+    }
+
+    .block__title {
+      font-size: $FSbase;
+      text-align: center;
+      text-transform: uppercase;
+      padding: 15px;
+      margin: 0 0 15px;
+      border-bottom: 1px solid $contentBorder;
+      color: $brand2;
+
+      a {
+        color: $brand2;
+      }
+    }
+
+    .views-row {
+      padding: 0 0 5px;
+      margin: 0 0 10px;
+      border-bottom: 1px solid $contentBorder;
+    }
+
+    .view-footer {
+      text-align: center;
+      padding: 10px 0 0;
+    }
+  }
+}

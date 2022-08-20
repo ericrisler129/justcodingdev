@@ -1,0 +1,24 @@
+.block-sidebar-nav {
+  &.block-issue-browser-nav {
+    .year-link {
+      cursor: pointer;
+
+      &+.item-list {
+        .collapsible {
+          transition: all 0.3s ease;
+          overflow: hidden;
+
+          &.collapsed {
+            height: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+.page-archives {
+  .view-filters {
+    display: none;
+  }
+}

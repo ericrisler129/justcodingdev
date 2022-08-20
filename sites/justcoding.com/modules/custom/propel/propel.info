@@ -1,0 +1,6 @@
+name = "Propel Plugins"
+description = Custom plugins like, date filter for calendar view, propel view access levels and plan name in configuration system page.
+package = "PROPEL"
+core = 7.x
+dependencies[] = blr_node_access
+dependencies[] = blr_webauth

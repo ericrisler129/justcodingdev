@@ -1,0 +1,4 @@
+guid, title, body, answer, feedback
+tf1, "Capital of China is Beijing", "Capital of China is Beijing", "1", "Yes it is true."
+tf2, "Capital of Spain is Madrid", "capital of Spain is Madrid", "1", "Yes it is true"
+tf3, "Capital of Italy is Milan", "Capital of Italy is Milan", "0", "Milan is not the capital of Italy"

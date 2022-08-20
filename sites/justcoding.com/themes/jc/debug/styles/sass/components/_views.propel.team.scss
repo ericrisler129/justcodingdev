@@ -1,0 +1,44 @@
+.block--views-propel-team-block {
+  border-bottom: 1px solid #999999;
+}
+
+.block--views-propel-team-block-1 {
+  .block__title{
+    font-size: 1.2em;
+  }
+  .view-propel-team {
+    .views-row {
+      position: relative;
+      min-height: 120px;
+
+      .views-field-field-image {
+        position: absolute;
+      }
+      .views-field-title {
+        color: #008ed8;
+	    padding-left: 120px;
+      }
+      .views-field-body {
+        padding-left: 120px;
+      }
+	}
+  }
+}
+
+.block--menu-block {
+  li {
+    &.propel-tab {
+	  &:hover,
+	  &.active {
+	    background-color: $orange !important;
+	  }
+	  a{
+	    &:hover,
+		&:active,
+		&.active {
+	      background-color: $orange !important;
+	    }
+	  }
+	}
+  }
+}

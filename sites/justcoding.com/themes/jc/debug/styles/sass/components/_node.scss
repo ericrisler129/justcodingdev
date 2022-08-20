@@ -1,0 +1,109 @@
+.node {
+  .group-details {
+    font-size: $FSsmall;
+
+    .field {
+      border: none;
+      padding: 0;
+      margin: 0;
+
+      &:before {
+        content: '-';
+        margin: 0 10px;
+
+        .page-quizzes-category-8788 &,
+        .page-quizzes-category-87 &,
+        .page-quizzes-category-88 & {
+          content: 'CE Quizzes - ';
+          margin: 0;
+        }
+      }
+
+      &.field-name-field-published,
+      &.field-name-post-date,
+	  &.field-name-field-propel-event-date {
+        font-style: italic;
+        color: $brand2;
+
+        .page-quizzes-category-8788 &,
+        .page-quizzes-category-87 &,
+        .page-quizzes-category-88 & {
+          display: none;
+        }
+      }
+
+      &:first-child {
+        font-weight: normal;
+
+        &:before {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .group-details-propel {
+    .field {
+      border: none;
+      padding: 0;
+      margin: 0;
+	}
+  }
+
+  .title-icon {
+    font-size: $FSsmall;
+    line-height: 21px;
+    font-weight: $primaryFontWeightBold;
+    text-align: center;
+    display: inline-block;
+    vertical-align: bottom;
+    width: 20px;
+    height: 20px;
+    margin: 0 5px 0 0;
+    color: #ffffff;
+    background-color: #ffffff;
+    border: 6px solid $brand1;
+  }
+
+  .title-with-icon,
+  .title-with-icon a {
+    font-weight: $primaryFontWeightBold;
+    text-transform: uppercase;
+    color: $copy;
+  }
+
+  .category-heading {
+    margin: 0 0 5px;
+  }
+
+  &.node-teaser,
+  &.node--quiz-topic {
+    @include lock;
+    padding: 0;
+
+    .lock-icon {
+      left: 3px;
+      top: 27px;
+    }
+
+    .field-name-title,
+    .group-details,
+    .field-name-body,
+    .field-name-field-quiz-articles,
+    .field-name-node-link {
+      padding: 0 0 0 22px;
+    }
+  }
+
+  &.node--quiz-topic,
+  &.node--job {
+    .lock-icon {
+      top: 2px;
+    }
+  }
+
+  .label-inline {
+    display: inline;
+    font-weight: $primaryFontWeightMed;
+  }
+}

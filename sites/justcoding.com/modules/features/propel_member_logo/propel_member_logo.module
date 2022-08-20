@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Propel Member Logo feature.
+ */
+
+include_once 'propel_member_logo.features.inc';

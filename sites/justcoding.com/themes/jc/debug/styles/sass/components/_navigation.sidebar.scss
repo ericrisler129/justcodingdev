@@ -1,0 +1,130 @@
+.block-sidebar-nav {
+  background-color: $brand1;
+
+  .title-wrapper {
+    h2 {
+      padding: 10px;
+      margin: 0;
+      color: #ffffff;
+    }
+  }
+
+  .menu-block-wrapper,
+  .views-exposed-widget,
+  .block__content {
+    padding: 0;
+    float: none;
+
+    ul,
+    ul.menu,
+    .bef-select-as-links {
+      padding: 0;
+      margin: 0;
+
+      li,
+      li.leaf,
+      .form-type-bef-link {
+        list-style: none;
+
+        a,
+        span {
+          font-weight: normal;
+          display: block;
+          padding: 8px $gutterSize;
+          color: #ffffff;
+
+          &.active,
+          &.active-trail,
+          &:hover {
+            background-color: $headings;
+
+            &:after {
+              content: '>';
+              float: right;
+            }
+          }
+
+          &.active,
+          &.active-trail {
+            font-weight: $primaryFontWeightMed;
+          }
+        }
+
+        ul {
+          li {
+            a {
+              padding: 5px 20px 5px 60px;
+
+              &.active,
+              &:hover {
+                color: $headings;
+                background-color: $infobox;
+                border-left: 3px solid $headings;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    &.views-widget-filter-body_value {
+      padding: 0 20px;
+
+      label {
+        display: block;
+        padding: 3px 0;
+        margin: 15px 0;
+        border-bottom: 1px solid #ffffff;
+        color: #ffffff;
+      }
+
+      input {
+        max-width: 100%;
+      }
+    }
+
+    &.views-submit-button {
+      text-align: center;
+      padding: 0 20px;
+
+      input {
+        transition: all 0.3s ease;
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0 20px;
+        border: none;
+        color: #ffffff;
+        background-color: $headings;
+
+        &:hover {
+          background-color: lighten($headings, 15);
+        }
+      }
+    }
+  }
+
+  .views-widget-per-page {
+    display: none;
+  }
+
+  .facetapi-facetapi-links {
+    li {
+      &.active {
+        color: #ffffff;
+      }
+
+      .facetapi-active {
+        display: inline-block !important;
+
+        &:hover {
+          background: none !important;
+          color: lighten($baseAnchors, 15);
+        }
+
+        &:after {
+          display: none;
+        }
+      }
+    }
+  }
+}

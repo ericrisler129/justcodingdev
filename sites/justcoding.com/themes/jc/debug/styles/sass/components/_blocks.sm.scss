@@ -1,0 +1,24 @@
+.block-sm-header {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0 10px;
+
+  .block__content {
+    @include clearfix;
+    padding: 4px;
+    background-color: $headings;
+
+    a {
+      float: left;
+      margin-right: 4px;
+
+      &:last-child {
+        margin: 0;
+      }
+
+      img {
+        display: block;
+      }
+    }
+  }
+}

@@ -1,0 +1,99 @@
+.page-node-take {
+  .field--name-body {
+    border-top: 1px solid $contentBorder;
+    border-bottom: 1px solid $contentBorder;
+
+    &+.form-item {
+      display: none;
+    }
+
+    p {
+      font-weight: $primaryFontWeightBold;
+
+      &:before {
+        content: "Q";
+        font-size: $FSsmall;
+        font-weight: $primaryFontWeightBold;
+        line-height: 20px;
+        text-align: center;
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin: 0 5px 0 0;
+        background-color: $brand1;
+        color: #ffffff;
+      }
+    }
+  }
+
+  .answering-form {
+    .question_type_name {
+      display: none;
+    }
+
+    table {
+      tr {
+        background: none;
+
+        .form-type-radio {
+          text-align: center;
+        }
+      }
+    }
+
+    & > div > div > em {
+      font-weight: $primaryFontWeightBold;
+      display: block;
+      margin: 15px 0;
+    }
+
+    .form-actions {
+      margin: 20px 20px 0 0;
+    }
+  }
+}
+
+.page-node-quiz-results {
+  .quiz-score {
+    text-align: center;
+
+    div {
+      display: inline-block;
+    }
+  }
+
+  .quiz-passfail {
+    font-weight: bold;
+    display: inline-block;
+
+    &.quiz-failed {
+      color: $buttonRed;
+    }
+
+    &.quiz-passed {
+      color: $buttonGreen;
+    }
+  }
+
+  .group-buttons {
+    text-align: center;
+    margin: 10px 0 30px;
+
+    .button {
+      margin: 0 10px 10px 0;
+
+      a {
+        padding: 5px 18px;
+      }
+    }
+  }
+}
+
+.block-quiz-sidebar-ce {
+  margin: 0 !important;
+
+  .infobox-intro {
+    font-size: $FSlarge;
+    font-weight: $primaryFontWeightMed;
+  }
+}

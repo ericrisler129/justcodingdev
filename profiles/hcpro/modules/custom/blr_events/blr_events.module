@@ -1,0 +1,630 @@
+<?php
+// TODO: Restructure to use Drupal's Add Block interface to add unlimited custom event blocks
+/**
+ * @file
+ * BLR Events Module
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function blr_events_menu() {
+  $items = array();
+
+  $items['admin/config/services/blr-events'] = array(
+    'title' => 'BLR Events',
+    'description' => 'BLR Events feed settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('blr_events_form'),
+    'access arguments' => array('administer users'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_cron().
+ */
+function blr_events_cron() {
+  cache_clear_all('event_data', 'cache_blr_events');
+
+  $event_request = drupal_http_request(blr_events_generate_request_url("event"));
+  $product_request = drupal_http_request(blr_events_generate_request_url("product"));
+  $event_data = drupal_json_decode($event_request->data);
+  $product_data = drupal_json_decode($product_request->data);
+  cache_set('event_data', $event_data, 'cache_blr_events');
+  cache_set('product_data', $product_data, 'cache_blr_events');
+
+  $queue = DrupalQueue::get('fetch_feeds');
+  $queue->createItem($event_data);
+  $queue->createItem($product_data);
+
+  watchdog('blr_events', 'Events Cron Completed');
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function blr_events_cron_queue_info() {
+  $queues['fetch_feeds'] = array(
+    'worker callback' => 'blr_events_fetch',
+    'time' => 60,
+  );
+  return $queues;
+}
+
+/**
+ * BLR Events cron queue callback
+ */
+function blr_events_fetch($item) {
+  watchdog('blr_events', 'BLR Fetch ran');
+/*
+  $event_data = &drupal_static(__FUNCTION__);
+
+  if (!isset($event_data)) {
+    if ($cache = cache_get('event_data')) {
+      $event_data = $cache->data;
+    } else {
+      $request = drupal_http_request("http://api.wunderground.com/api/Your_Key/conditions/q/CA/San_Francisco.json");
+      $event_data = drupal_json_decode($request->data);
+      cache_set('event_data', $event_data, 'cache_blr_events');
+    }
+  }
+*/
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function blr_events_block_info() {
+  $blocks = [];
+
+  $blocks['blr_events_footer'] = array(
+    'info' => t('BLR Events - Footer'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  );
+
+  $blocks['blr_events_page_events'] = array(
+    'info' => t('BLR Events - Main Events'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  );
+
+  $blocks['blr_events_page_webcasts'] = array(
+    'info' => t('BLR Events - Main Webcasts'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function blr_events_block_view($block_name = '') {
+  $content = [];
+
+  switch($block_name) {
+    case 'blr_events_footer':
+      blr_events_footer_block($content);
+      break;
+    case 'blr_events_page_events':
+      blr_events_page_events($content);
+      break;
+    case 'blr_events_page_webcasts':
+      blr_events_page_webcasts($content);
+      break;
+  }
+
+  $block = array(
+    'subject' => '',
+    'content' => $content,
+  );
+
+  return $block;
+}
+
+/**
+ * Generate content for event page events.
+ */
+function blr_events_page_events(&$content) {
+  if (!empty(variable_get('blr_events_bootcamp_category_id')) && variable_get('blr_events_bootcamp_page_count') != 0) {
+    $content[variable_get('blr_events_bootcamp_category_id')] = array(
+      '#prefix' => '<div class="event-heading">',
+      '#suffix' => '</div>',
+      'title' => array(
+        '#prefix' => '<h3 class="event-category-title">',
+        '#suffix' => '</h3>',
+        'header' => array(
+          '#prefix' => '<span>',
+          '#suffix' => '</span>',
+          '#markup' => 'Bootcamps',
+        ),
+        'more-link' => array(
+          '#theme' => 'link',
+          '#text' => 'More Bootcamps >>',
+          '#path' => variable_get('blr_events_bootcamp_more_link'),
+          '#options' => array(
+            'attributes' => array(
+              'target' => '_blank',
+            ),
+            'html' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
+  blr_events_get_event_items(variable_get('blr_events_bootcamp_category_id'), variable_get('blr_events_bootcamp_page_count'), $content, FALSE, FALSE);
+
+  if (!empty(variable_get('blr_events_conference_category_id')) && variable_get('blr_events_conference_page_count') != 0) {
+    $content[variable_get('blr_events_conference_category_id')] = array(
+      '#prefix' => '<div class="event-heading">',
+      '#suffix' => '</div>',
+      'title' => array(
+        '#prefix' => '<h3 class="event-category-title">',
+        '#suffix' => '</h3>',
+        'header' => array(
+          '#prefix' => '<span>',
+          '#suffix' => '</span>',
+          '#markup' => 'Conferences',
+        ),
+        'more-link' => array(
+          '#theme' => 'link',
+          '#text' => 'More Conferences >>',
+          '#path' => variable_get('blr_events_conference_more_link'),
+          '#options' => array(
+            'attributes' => array(
+              'target' => '_blank',
+            ),
+            'html' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
+  blr_events_get_event_items(variable_get('blr_events_conference_category_id'), variable_get('blr_events_conference_page_count'), $content, FALSE, FALSE);
+}
+
+/**
+ * Generate content for event page webcasts.
+ */
+function blr_events_page_webcasts(&$content) {
+  if (!empty(variable_get('blr_events_webcast_category_id')) && variable_get('blr_events_webcast_page_count') != 0) {
+    $content[variable_get('blr_events_webcast_category_id')] = array(
+      '#prefix' => '<div class="event-heading">',
+      '#suffix' => '</div>',
+      'title' => array(
+        '#prefix' => '<h3 class="event-category-title">',
+        '#suffix' => '</h3>',
+        'header' => array(
+          '#prefix' => '<span>',
+          '#suffix' => '</span>',
+          '#markup' => 'Upcoming',
+        ),
+        'more-link' => array(
+          '#theme' => 'link',
+          '#text' => 'More Upcoming >>',
+          '#path' => variable_get('blr_events_webcast_more_link'),
+          '#options' => array(
+            'attributes' => array(
+              'target' => '_blank',
+            ),
+            'html' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
+  blr_events_get_event_items(variable_get('blr_events_webcast_category_id'), variable_get('blr_events_webcast_page_count'), $content, FALSE, FALSE);
+
+  if (!empty(variable_get('blr_events_webcast_on_demand_category_id')) && variable_get('blr_events_webcast_on_demand_page_count') != 0) {
+    $content[variable_get('blr_events_webcast_on_demand_category_id')] = array(
+      '#prefix' => '<div class="event-heading">',
+      '#suffix' => '</div>',
+      'title' => array(
+        '#prefix' => '<h3 class="event-category-title">',
+        '#suffix' => '</h3>',
+        'header' => array(
+          '#prefix' => '<span>',
+          '#suffix' => '</span>',
+          '#markup' => 'On-Demand',
+        ),
+        'more-link' => array(
+          '#theme' => 'link',
+          '#text' => 'More On-Demand >>',
+          '#path' => variable_get('blr_events_ondemand_more_link'),
+          '#options' => array(
+            'attributes' => array(
+              'target' => '_blank',
+            ),
+            'html' => FALSE,
+          ),
+        ),
+      ),
+    );
+  }
+  blr_events_get_product_items(variable_get('blr_events_webcast_on_demand_category_id'), variable_get('blr_events_webcast_on_demand_page_count'), $content, FALSE);
+}
+
+/**
+ * Generate content for event footer block.
+ */
+function blr_events_footer_block(&$content) {
+  if (!empty(variable_get('blr_events_bootcamp_category_id')) && variable_get('blr_events_bootcamp_block_count') != 0) {
+    $content[variable_get('blr_events_bootcamp_category_id')] = array(
+      '#prefix' => '<div class="footer-event-block">',
+      '#suffix' => '</div>',
+      'title' => array(
+        '#type' => 'markup',
+        '#markup' => '<span class="event-category-title">Bootcamp</span>',
+      ),
+    );
+    blr_events_get_event_items(variable_get('blr_events_bootcamp_category_id'), variable_get('blr_events_bootcamp_block_count'), $content, TRUE, FALSE);
+  }
+  if (!empty(variable_get('blr_events_conference_category_id')) && variable_get('blr_events_conference_block_count') != 0) {
+    $content[variable_get('blr_events_conference_category_id')] = array(
+      '#prefix' => '<div class="footer-event-block">',
+      '#suffix' => '</div>',
+      'title' => array(
+        '#type' => 'markup',
+        '#markup' => '<span class="event-category-title">Conference</span>',
+      ),
+    );
+    blr_events_get_event_items(variable_get('blr_events_conference_category_id'), variable_get('blr_events_conference_block_count'), $content, TRUE);
+  }
+  if (!empty(variable_get('blr_events_webcast_category_id')) && variable_get('blr_events_webcast_block_count') != 0) {
+    $content[variable_get('blr_events_webcast_category_id')] = array(
+      '#prefix' => '<div class="footer-event-block">',
+      '#suffix' => '</div>',
+      'title' => array(
+        '#type' => 'markup',
+        '#markup' => '<span class="event-category-title">Webcast</span>',
+      ),
+    );
+    blr_events_get_event_items(variable_get('blr_events_webcast_category_id'), variable_get('blr_events_webcast_block_count'), $content, TRUE, FALSE);
+  }
+  if (!empty(variable_get('blr_events_webcast_on_demand_category_id')) && variable_get('blr_events_webcast_on_demand_block_count') != 0) {
+    $content[variable_get('blr_events_bootcamp_category_id')] = array(
+      '#prefix' => '<div class="footer-event-block">',
+      '#suffix' => '</div>',
+      'title' => array(
+        '#type' => 'markup',
+        '#markup' => '<span class="event-category-title">Bootcamp</span>',
+      ),
+    );
+    blr_events_get_product_items(variable_get('blr_events_webcast_on_demand_category_id'), variable_get('blr_events_webcast_on_demand_block_count'), $content, FALSE);
+  }
+
+  $content['more'] = array(
+    '#theme' => 'link',
+    '#text' => 'More Events',
+    '#path' => '/node/' . variable_get('blr_events_events_page_nid', '1'),
+    '#prefix' => '<div class="button-wrapper"><div class="button">',
+    '#suffix' => '</div></div>',
+    '#options' => array(
+      'attributes' => array(
+        'class' => array('button-brand1'),
+      ),
+      'html' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+/*
+function blr_events_block_configure($delta = '') {
+  $form = array();
+
+  switch($delta) {
+    case 'blr_events_footer':
+      break;
+  }
+
+  return $form;
+}
+*/
+
+/**
+ * Implements hook_block_save().
+ */
+/*
+function blr_events_block_save($delta = '', $edit = array()) {
+  //variable_set("blr_events_max_results_{$delta}", $edit['blr_events_max_results']);
+}
+*/
+
+function category_section_description($category) {
+  if ($category == 'Page Count') return('Enter number of events to show on events page block. If given 0 (zero) the entire category section is removed from the page block.');
+  elseif ($category == 'Block Count') return('Enter number of events to show on events footer block. If given 0 (zero) the entire category section is removed from the footer block.');
+  else return('Enter the ID for this category');
+}
+
+/**
+ * @param $node
+ * @param $form_state
+ * @return mixed
+ *
+ * Admin UI form
+ *
+ * Default variables in the admin UI to configure
+ * Events URL: https://hcmarketplace.com/blrapi/product/event?cat[]=470&new=1&
+ * Product URL: https://hcmarketplace.com/blrapi/product/category?
+ *
+ * Main Section ID: cat[]=505&all=1
+ * Bootcamp Category ID: 497
+ * Conference Category ID: 463
+ * Webcast Category ID: 468
+ * Webcast On-Demand Category ID: 489
+ *
+ * More Links
+ * Bootcamps: https://hcmarketplace.com/product-type/boot-camps/coding
+ * Conferences: https://hcmarketplace.com/product-type/seminars
+ * Webcasts: https://hcmarketplace.com/product-type/webcast
+ * Webcasts On-Demand: https://hcmarketplace.com/subject/coding
+ */
+
+function blr_events_form($node, &$form_state) {
+  $form['blr_events_events_page_nid'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('blr_events_events_page_nid', '1'),
+    '#title' => t('Main events page'),
+    '#required' => TRUE,
+    '#description' => t("The main network page node ID"),
+  );
+
+  $form['blr_events_api_url'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('API Request URL'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['blr_events_api_url']['blr_events_event_url'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('blr_events_event_url'),
+    '#title' => t('Events URL'),
+    '#description' => t('API URL for events, and combined with Section ID.
+	  To pull event links for Bootcamps, Conferences and Upcoming Webinars'),
+    '#required' => TRUE,
+  );
+
+  $form['blr_events_api_url']['blr_events_product_url'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('blr_events_product_url'),
+    '#title' => t('Product URL'),
+    '#description' => t('API URL for Products, and combined with Section ID.
+	  To pull event links for On-demand Webinars'),
+    '#required' => TRUE,
+  );
+
+  $form['blr_events_category'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Categories'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['blr_events_category']['blr_events_section_id'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('blr_events_section_id', '0'),
+    '#title' => t('Main Section ID'),
+    '#description' => t('Allows multiple categories, use the form "&cat[]=123&cat[]=456"'),
+    '#required' => TRUE,
+  );
+
+  /**
+   * Configure category varibles on admin UI interface.
+   * Below form creates these variable names. check $section_name;
+   *
+   * blr_events_bootcamp_category_id
+   * blr_events_bootcamp_page_count
+   * blr_events_bootcamp_block_count
+   * blr_events_conference_category_id
+   * blr_events_conference_page_count
+   * blr_events_conference_block_count
+   * blr_events_webcast_category_id
+   * blr_events_webcast_page_count
+   * blr_events_webcast_block_count
+   * blr_events_webcast_on_demand_category_id
+   * blr_events_webcast_on_demand_page_count
+   * blr_events_webcast_on_demand_block_count
+   */
+
+  $categories = ['bootcamp', 'conference', 'webcast', 'webcast on demand'];
+  $category_sections = ['Category ID', 'Page Count', 'Block Count'];
+
+  foreach ($categories as $category) {
+    $cat_tail = strtolower(str_replace(' ', '_', $category));
+    $category_name = 'blr_events_' . $cat_tail;
+    $form['blr_events_category'][$category_name] = array(
+      '#type' => 'fieldset',
+      '#default_value' => variable_get($category_name),
+      '#title' => $category . t(' Category'),
+      '#required' => TRUE,
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    foreach ($category_sections as $category_section) {
+      $sec_tail = strtolower(str_replace(' ', '_', $category_section));
+      $section_name = $category_name . '_' . $sec_tail;
+      $form['blr_events_category'][$category_name][$section_name] = [
+        '#title' => $category_section,
+        '#type' => 'textfield',
+        '#default_value' => variable_get($section_name, '0'),
+        '#required' => TRUE,
+        '#description' => category_section_description($category_section),
+      ];
+    }
+  }
+
+  $form['blr_events_more_links'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('View More Links'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['blr_events_more_links']['blr_events_bootcamp_more_link'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('blr_events_bootcamp_more_link', 'https://hcmarketplace.com/product-type/boot-camps/clinical-documentation?code=SMHIM1ZA1'),
+    '#title' => t('Bootcamps'),
+    '#required' => TRUE,
+  );
+
+  $form['blr_events_more_links']['blr_events_conference_more_link'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('blr_events_conference_more_link', 'https://hcmarketplace.com/product-type/seminars?code=SMHIM1ZA1'),
+    '#title' => t('Conferences'),
+    '#required' => TRUE,
+  );
+
+  $form['blr_events_more_links']['blr_events_webcast_more_link'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('blr_events_webcast_more_link', 'https://hcmarketplace.com/product-type/webinars?code=SMHIM1ZA1'),
+    '#title' => t('Webcasts'),
+    '#required' => TRUE,
+  );
+
+  $form['blr_events_more_links']['blr_events_ondemand_more_link'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('blr_events_ondemand_more_link', 'https://hcmarketplace.com/subject/coding?code=SMHIM1ZA1'),
+    '#title' => t('Webcasts On-Demand'),
+    '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Generate date for event listings.
+ */
+function blr_events_format_date($date_string, $short = FALSE) {
+  $timestamp = strtotime($date_string);
+
+  if ($short) {
+    return date('n/j/Y', $timestamp);
+  } else {
+    return date('l n/j/Y', $timestamp);
+  }
+}
+
+/**
+ * Get event items
+ */
+function blr_events_get_event_items($category, $amount, &$content, $trim = TRUE, $short_date = TRUE) {
+  $cache = cache_get('event_data', 'cache_blr_events');
+  $data = $cache->data['products'];
+  $count = 0;
+
+  if ($amount == 0) return TRUE;
+
+  foreach ($data as $key => $item) {
+    $category_id = $item['category_id'];
+    $category_ids = $item['category_ids'];
+
+    if (in_array($category, $category_ids)) {
+      if ($count < $amount) {
+        $text = $item['name'];
+
+        $content[$category][$count] = array(
+          '#prefix' => '<div class="event-item">',
+          '#suffix' => '</div>',
+          'date' => array(
+            '#prefix' => '<span class="event-date">',
+            '#suffix' => '</span>',
+            '#markup' => blr_events_format_date($item["event_date"], $short_date),
+          ),
+          'link' => array(
+            '#theme' => 'link',
+            '#text' => $trim ? substr($text,0,75)."..." : $text,
+            '#path' => 'https://hcmarketplace.com/' . $item['url_key'] . '?code=SMHIM1ZA1',
+            '#options' => array(
+              'attributes' => array(
+                'class' => array('event-item-link'),
+                'target' => '_blank',
+              ),
+              'html' => FALSE,
+            ),
+          ),
+        );
+
+        $count++;
+      }
+    }
+  }
+
+  if (empty($content[$category][0])) {
+    $content[$category]['noresults'] = array(
+      '#markup' => "<p class='no-results'>No events of this type are currently scheduled.  Please check back soon!</p>",
+    );
+  }
+}
+
+/**
+ * Get product items
+ */
+function blr_events_get_product_items($category, $amount, &$content, $trim = TRUE) {
+  $cache = cache_get('product_data', 'cache_blr_events');
+  $data = $cache->data;
+  $count = 0;
+
+  if($amount == 0) return TRUE;
+
+  foreach ($data['products'] as $key => $item) {
+    $category_id = $item['category_id'];
+    $category_ids = $item['category_ids'];
+
+    if (in_array($category, $category_ids)) {
+      if ($count < $amount) {
+        $text = $item['name'];
+
+        $content[$category][$count] = array(
+          '#prefix' => '<div class="event-item">',
+          '#suffix' => '</div>',
+          'link' => array(
+            '#theme' => 'link',
+            '#text' => $trim ? substr($text,0,50)."..." : $text,
+            '#path' => 'https://hcmarketplace.com/' . $item['url_key'] . '?code=SMHIM1ZA1',
+            '#options' => array(
+              'attributes' => array(
+                'class' => array('event-item-link'),
+                'target' => '_blank',
+              ),
+              'html' => FALSE,
+            ),
+          ),
+        );
+
+        $count++;
+      }
+    }
+  }
+
+  if (empty($content[$category][0])) {
+    $content[$category]['noresults'] = array(
+      '#markup' => "<p class='no-results'>No events of this type are currently scheduled.  Please check back soon!</p>",
+    );
+  }
+}
+
+/*
+function date_compare($a, $b) {
+  $a = strtotime($a['event_date']);
+  $b = strtotime($b['event_date']);
+
+  if ($a == $b) {
+    return 0;
+  }
+
+  return ($a < $b) ? -1 : 1;
+}
+*/
+
+function blr_events_generate_request_url($type) {
+  $request_base_url = ($type === "event")
+    ? variable_get('blr_events_event_url') . variable_get('blr_events_section_id')
+    : variable_get('blr_events_product_url') . variable_get('blr_events_section_id');
+  return $request_base_url;
+}

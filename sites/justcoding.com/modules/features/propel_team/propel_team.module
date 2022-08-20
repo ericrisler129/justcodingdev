@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Propel Team feature.
+ */
+
+include_once 'propel_team.features.inc';

@@ -1,0 +1,58 @@
+.block-user-nav {
+  .menu {
+    .menu-blue {
+      background-color: $buttonBlue;
+
+      &:hover,
+      &.active {
+        background-color: #ffffff;
+
+        & > a {
+          color: $buttonBlue;
+        }
+      }
+    }
+
+    .menu-green {
+      background-color: $buttonGreen;
+
+      &:hover,
+      &.active {
+        background-color: #ffffff;
+
+        & > a {
+          color: $buttonGreen;
+        }
+      }
+    }
+
+    .menu-black {
+      background-color: $buttonBlack;
+
+      &:hover,
+      &.active {
+        background-color: #ffffff;
+
+        & > a {
+          color: $buttonBlack;
+        }
+      }
+    }
+
+    li {
+      .menu {
+        li {
+          background: none;
+
+          &:hover {
+            background-color: #000000;
+
+            a {
+              color: #ffffff;
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+.view-content {
+  thead {
+    @include infobox;
+
+    th {
+      text-transform: uppercase;
+      padding: 10px !important;
+    }
+  }
+}
+
+.views-widget-per-page {
+  label {
+    text-transform: uppercase;
+    display: inline-block;
+    margin: 0 5px 0 0;
+    color: $brand2;
+  }
+
+  .bef-select-as-links {
+    display: inline-block;
+
+    .form-type-bef-link {
+      font-weight: $primaryFontWeightBold;
+      line-height: 1em;
+      display: inline-block;
+      padding: 0 5px 0 1px;
+
+      &:not(:last-child) {
+        border-right: 1px solid $contentBorder;
+      }
+    }
+  }
+}
+
+.views-field-bundle {
+  text-transform: capitalize;
+}

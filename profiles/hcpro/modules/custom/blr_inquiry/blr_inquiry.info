@@ -1,0 +1,6 @@
+name = Inquiry Tracking
+description = "Inquiry tracking functionality"
+package = Custom
+core = 7.x
+files[] = blr_inquiry.module
+dependencies[] = blr_webauth

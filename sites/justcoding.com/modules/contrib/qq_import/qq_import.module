@@ -1,0 +1,96 @@
+<?php
+
+/**
+ * @file
+ * This modules allows user with permission 'import quiz questions'
+ * to create a bulk of questions from CSV file.
+ * For sample import files see 'examples' directory.
+ */
+
+module_load_include('inc', 'qq_import', 'qq_import.plugins');
+
+/**
+ * Implements hook_menu().
+ */
+function qq_import_menu() {
+  $items['admin/quiz/import'] = array(
+    'title' => 'Quiz question import',
+    'description' => 'Set the default values when importing',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('quiz_question_import_settings_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'qq_import.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_feeds_preprocessor_targets_alter().
+ */
+
+function qq_import_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_name) {
+  if ($entity_type == 'node') {
+    if ($bundle_name == 'multichoice') {
+      // the following 2 variables are made explicitly to suit the need for jokull project
+      // this saves the correct option from the csv file
+      $targets['multichoice_alternative_correct'] = array(
+        'name' => t('Correct alternative'),
+        'description' => t('Sets the correct answer among the alternatives'),
+        'callback' => 'qq_import_field_mapper',
+      );
+      // this saves the incorrect option from the csv fiel
+      $targets['multichoice_alternative_incorrect'] = array(
+        'name' => t('Incorrect alternative'),
+        'description' => t('Sets the incorrect answer among the alternatives'),
+        'callback' => 'qq_import_field_mapper',
+      );
+    }
+  }
+}
+
+/**
+ * Callback for mapping. Here is where the actual mapping happens.
+ *
+ * When the callback is invoked, $target contains the name of the field the
+ * user has decided to map to and $value contains the value of the feed item
+ * element the user has picked as a source.
+ */
+function qq_import_field_mapper($source, $entity, $target, array $value, $mapping) {
+  if (isset($mapping['target'])) {
+    if ($mapping['target'] == 'multichoice_alternative_correct') {
+      _qq_import_multichoice_alternative_set($entity, $value, TRUE);
+    }
+    elseif ($mapping['target'] == 'multichoice_alternative_incorrect') {
+      _qq_import_multichoice_alternative_set($entity, $value, FALSE);
+    }
+  }
+}
+
+function _qq_import_multichoice_alternative_set($entity, array $value, $is_correct) {
+  // default values
+  $input_format = variable_get('qq_import_multichoice_text_format', filter_default_format());
+  $score_correct = variable_get('qq_import_score_correct', 1);
+  $score_incorrect = variable_get('qq_import_score_incorrect', 0);
+  // node properties
+  $entity->choice_boolean = variable_get('qq_import_choice_boolean', 0);
+  $entity->choice_random = variable_get('qq_import_choice_random', 1);
+  $entity->choice_multi = variable_get('qq_import_choice_multi', 0);
+  $entity->alternatives[] = array(
+    'answer' => array(
+      'value' => $value[0],
+      'format' => $input_format
+    ),
+    'score_if_chosen' => $is_correct ? $score_correct : $score_incorrect,
+    'score_if_not_chosen' => 0,
+    'feedback_if_chosen' => array(
+      'value' => '',
+      'format' => $input_format,
+    ),
+    'feedback_if_not_chosen' => array(
+      'value' => '',
+      'format' => $input_format,
+    ),
+    'correct' => $is_correct,
+  );
+}

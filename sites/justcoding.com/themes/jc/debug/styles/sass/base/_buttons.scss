@@ -1,0 +1,121 @@
+.button {
+  a:visited,
+  a:focus {
+    color: #ffffff;
+  }
+
+  a,
+  button {
+    &.button-blue {
+      background-color: $buttonBlue;
+      border: 2px solid $buttonBlue;
+
+      &:hover {
+        background-color: #ffffff;
+        color: $buttonBlue;
+      }
+    }
+
+    &.button-yellow {
+      background-color: $buttonYellow;
+      border: 2px solid $buttonYellow;
+
+      &:hover {
+        background-color: #ffffff;
+        color: $buttonYellow;
+      }
+    }
+
+    &.button-green {
+      background-color: $buttonGreen;
+      border: 2px solid $buttonGreen;
+
+      &:hover {
+        background-color: #ffffff;
+        color: $buttonGreen;
+      }
+    }
+
+    &.button-red {
+      background-color: $buttonRed;
+      border: 2px solid $buttonRed;
+
+      &:hover {
+        background-color: #ffffff;
+        color: $buttonRed;
+      }
+    }
+
+    &.button-brand1 {
+      background-color: $brand1;
+      border: 2px solid $brand1;
+
+      &:hover {
+        background-color: #ffffff;
+        color: $brand1;
+      }
+    }
+
+	&.button-grey {
+      background-color: $buttonGrey;
+      border: 2px solid $buttonGrey;
+
+      &:hover {
+        background-color: #ffffff;
+        color: $buttonGrey;
+      }
+    }
+  }
+}
+
+.button-input {
+  transition: all 0.3s ease;
+  font-weight: $primaryFontWeightMed;
+  padding: 5px 20px;
+  margin: 0 10px 0 0;
+  border: 2px solid #000000;
+  background: #000000;
+  color: #ffffff;
+
+  &:hover {
+    background-color: #ffffff;
+    color: #000000;
+  }
+
+  &.button-input-green {
+    border-color: $buttonGreen;
+    background-color: $buttonGreen;
+
+    &:hover {
+      background-color: #ffffff;
+      color: $buttonGreen;
+    }
+  }
+
+  &.button-input-brand1 {
+    border-color: $brand1;
+    background-color: $brand1;
+
+    &:hover {
+      background-color: #ffffff;
+      color: $brand1;
+    }
+  }
+}
+
+.group-buttons {
+  text-align: center;
+  margin: 20px 0 0;
+
+  &.rightalign {
+    text-align: right;
+  }
+
+  &.leftalign {
+    text-align: left;
+  }
+
+  &.nomargin {
+    margin: 0;
+  }
+}

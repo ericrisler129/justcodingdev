@@ -1,0 +1,15 @@
+diff --git a/modules/system/system.admin.inc b/modules/system/system.admin.inc
+index b7e6fc9e..9c8ba1e3 100644
+--- a/modules/system/system.admin.inc
++++ b/modules/system/system.admin.inc
+@@ -1730,7 +1730,9 @@ function system_performance_settings() {
+   );
+ 
+   $directory = 'public://';
+-  $is_writable = is_dir($directory) && is_writable($directory);
++  // nfs patch
++  //$is_writable = is_dir($directory) && is_writable($directory);
++  $is_writable = 1;
+   $disabled = !$is_writable;
+   $disabled_message = '';
+   if (!$is_writable) {

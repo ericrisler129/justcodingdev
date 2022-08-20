@@ -1,0 +1,5 @@
+"guid","Title","Question","Rubric text"
+l1,"Write a note about Internet","Write a note about Internet", "The Internet is a global system of interconnected computer networks that use the standard Internet protocol suite (TCP/IP) to serve several billion users worldwide."
+l2,"What is computer networks?","What is computer networks?","A computer network is a telecommunications network that allows computers to exchange data. The physical connection between networked computing devices is established using either cable media or wireless media. The best-known computer network is the Internet."
+l3,"Write note about topology","Write note about topology", "Network topology is the arrangement of the various elements (links, nodes, etc.) of a computer[1][2] or biological network.[3] Essentially, it is the topological[4] structure of a network, and may be depicted physically or logically."
+l4,"Write about Local area network","Write about Local area network", "A local area network (LAN) is a computer network that interconnects computers in a limited area such as a home, school, computer laboratory, or office building using network media."

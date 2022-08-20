@@ -1,0 +1,89 @@
+.block-form-jobs {
+  &.styled-form {
+    form {
+      @include clearfix;
+      background: none;
+
+      label {
+        font-weight: $primaryFontWeightBold;
+      }
+
+      .form-item {
+        margin-bottom: $gutterSize;
+      }
+
+      .webform-component-textfield,
+      .webform-component-email {
+        @include breakpoint($tabSmall) {
+          width: 49%;
+          float: left;
+
+          &:nth-child(even) {
+            margin-right: 2%;
+          }
+        }
+      }
+
+      .webform-component-display {
+        font-weight: $primaryFontWeightBold;
+        text-align: center;
+        text-transform: uppercase;
+        padding: 15px 20px;
+        margin: $gutterSize 0;
+        border-top: 1px solid $contentBorder;
+        border-bottom: 1px solid $contentBorder;
+        color: $brand2;
+        clear: both;
+
+        p {
+          margin: 0;
+        }
+      }
+
+      .webform-component-file {
+        @include clearfix;
+
+        .form-file {
+          width: 75%;
+          vertical-align: top;
+          padding: 0;
+        }
+
+        .form-submit {
+          font-weight: $primaryFontWeightMed;
+          text-transform: uppercase;
+          transition: all 0.3s ease;
+          float: right;
+          vertical-align: top;
+          border: 2px solid $brand1;
+          background-color: $brand1;
+          color: #ffffff;
+
+          @include breakpoint($tabSmall) {
+            width: 23%;
+          }
+
+          &:hover {
+            background-color: #ffffff;
+            color: $brand1;
+          }
+        }
+      }
+
+      .form-actions {
+        text-align: right;
+        clear: both;
+
+        input {
+          text-transform: uppercase;
+          height: 45px;
+          margin: 0;
+
+          @include breakpoint($tabSmall) {
+            width: 23%;
+          }
+        }
+      }
+    }
+  }
+}

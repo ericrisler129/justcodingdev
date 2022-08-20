@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the JCP Rest Service Views feature.
+ */
+
+include_once 'jcp_rest_service_views.features.inc';

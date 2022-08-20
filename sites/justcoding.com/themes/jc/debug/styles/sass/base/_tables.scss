@@ -1,0 +1,39 @@
+.table-membership {
+  thead {
+    tr {
+      th {
+        text-align: center;
+        padding: 0 10px;
+        background-color: #ffffff;
+        border: 3px solid $contentBorder;
+
+        &:nth-child(even) {
+          color: #ffffff;
+          background-color: $brand1;
+        }
+
+        &:nth-child(3) {
+          color: $brand1;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      td {
+        padding: 5px;
+        border: 3px solid $contentBorder;
+
+        &:nth-child(even) {
+          color: #ffffff;
+          background-color: $brand1;
+        }
+
+        &:nth-child(3) {
+          color: $brand1;
+        }
+      }
+    }
+  }
+}

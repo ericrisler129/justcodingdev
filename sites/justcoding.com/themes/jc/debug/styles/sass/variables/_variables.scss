@@ -1,0 +1,93 @@
+
+//** Required Imports **//
+
+@import 'singularitygs';
+
+
+//** Colors **//
+
+// Branding
+$brand1: #116798;
+$brand2: #a74033;
+$brand3: #f4f4f4;
+
+// Text
+$copy: #575757;
+$nodeTitles: $copy;
+$baseAnchors: $brand1;
+$nodeTitlesLink: $brand1;
+$headings: #3b3a3a;
+$navLink: #fff;
+
+// Background
+$bodyBG: #ececec;
+$contentBG: #fff;
+$headerBG: $brand1;
+$navBG: #3b393a;
+$navHoverBG: #000;
+$footerBG: #3b393a;
+$tableEvenBG: $bodyBG;
+$hr: #f4f4f4;
+$contentBorder: #efefef;
+$infobox: #e7f4f7;
+$lightGreen: #98c938;
+$orange: #f7941d;
+
+// Forms
+$inputBorder: #ccc;
+$placeholderText: #445b72;
+$formLabel: #666;
+
+// Sections
+
+// Buttons
+$buttonGreen: #56b75b;
+$buttonRed: #c82126;
+$buttonBlue: #57bfdd;
+$buttonYellow: #f0ad42;
+$buttonGrey: $navBG;
+
+// Nav Menu
+$mobileSubMenuShadow: rgba(0, 0, 0, 0.95);
+$mobileSubMenuBG: rgba(255, 255, 255, 0.05);
+
+
+//** Typography **//
+
+// Font families, styles, weights, variants, etc.
+$primaryFont: 'Open Sans', sans-serif;
+$primaryFontWeightMed: 600;
+$primaryFontWeightBold: 700;
+
+// Master font sizes
+$FSbase: 1em; //14
+$FSextraSmall: 0.714em; //10
+$FSsmall: 0.857em; //12
+$FSdefault: 1.143em; //16
+$FSlarge: 1.286em; //18
+$FSextraLarge: 1.429em; //20
+
+// Element font sizes
+$FSsearchPlaceholder: $FSsmall;
+$FSnavigation: $FSdefault;
+$FSnodeTitles: $FSlarge;
+$FSheading: $FSextraLarge;
+
+
+//** Layout **//
+
+// Grid
+@include add-grid(12);
+@include add-gutter(20px);
+$gutterSize: gutter-span();
+
+// Breakpoints
+$mobileSmall: 30em; // 480px
+$mobile: 40em; // 640px
+$tabSmall: 48em; // 768px
+$tabSmallMax: 63.9999em; // ~1023px
+$tab: 64em; // 1024px
+$desk: 68.75em; // 1100px
+
+// Sizing
+$siteWidth: 68.75rem; // 1100px

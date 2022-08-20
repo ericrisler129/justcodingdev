@@ -1,0 +1,34 @@
+.block-user-nav {
+  float: right;
+
+  .menu {
+    li {
+      a {
+        font-weight: normal;
+      }
+
+      &:hover {
+        .menu {
+          display: block;
+        }
+      }
+
+      .menu {
+        position: absolute;
+        display: none;
+
+        li {
+          background-color: $buttonBlack;
+
+          &:hover {
+            background-color: #ffffff;
+
+            a {
+              color: #000000;
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Propel Ask The Expert feature.
+ */
+
+include_once 'propel_ask_the_expert.features.inc';

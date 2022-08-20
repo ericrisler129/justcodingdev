@@ -1,0 +1,15 @@
+.page-encyclopedia {
+  .lexicon-links {
+    @include infobox;
+    font-size: $FSlarge;
+    font-weight: $primaryFontWeightBold;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+
+  .lexicon-list {
+    dt {
+      margin: 5px 0;
+    }
+  }
+}

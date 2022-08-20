@@ -1,0 +1,31 @@
+.pager {
+  text-align: right;
+
+  &:before {
+    content: "";
+    display: inline;
+  }
+
+  .pager__item {
+    display: inline-block;
+    border: 1px solid $contentBorder;
+    border-left: none;
+    padding: 7px 14px;
+    margin: 0 0 0 -4px;
+
+    &:first-child {
+      border-left: 1px solid $contentBorder;
+    }
+
+    &.pager__item--current,
+    &:hover {
+      transition: all 0.3s ease;
+      color: #ffffff;
+      background-color: $brand1;
+
+      a {
+        color: #ffffff;
+      }
+    }
+  }
+}

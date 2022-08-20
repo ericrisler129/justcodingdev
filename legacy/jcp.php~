@@ -1,0 +1,349 @@
+<?php
+error_reporting(error_reporting() & ~E_NOTICE);
+libxml_use_internal_errors(true);
+
+$files = array();
+
+foreach(file_scan_directory('private://content','/.*/') as $file)
+    $files[$file->name] = $file;
+
+// Scan for files already saved
+$query = new EntityFieldQuery;
+$result = $query->entityCondition('entity_type', 'file')->execute();
+if(isset($result['file'])) {
+  $dbFiles = file_load_multiple(array_map(function($t) { return $t->fid; },$result['file']));
+  foreach($dbFiles as $dbFile) {
+    $name = pathinfo($dbFile->filename, PATHINFO_FILENAME);
+    $files[$name]->fid = $dbFile->fid;
+  }
+}
+
+function display_xml_error($error, $xml)
+{
+    $return  = $xml[$error->line - 1] . "\n";
+    $return .= str_repeat('-', $error->column) . "^\n";
+    switch ($error->level) {
+        case LIBXML_ERR_WARNING: $return .= "Warning $error->code: "; break;
+        case LIBXML_ERR_ERROR: $return .= "Error $error->code: "; break;
+        case LIBXML_ERR_FATAL: $return .= "Fatal Error $error->code: "; break;
+    }
+    $return .= trim($error->message) . "\n  Line: $error->line" . "\n  Column: $error->column";
+    if ($error->file) 
+        $return .= "\n  File: $error->file";
+    return "$return\n\n--------------------------------------------\n\n";
+}
+
+function utf8_for_xml($string)
+{
+    return preg_replace ('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', ' ', $string);
+}
+
+function legacy_html_entity_decode($str, $quotes = ENT_QUOTES, $charset = 'UTF-8') {
+    $out = html_entity_decode(preg_replace_callback('/&#(\d+);/', function ($m) use ($quotes, $charset) {
+        if (0x80 <= $m[1] && $m[1] <= 0x9F) {
+            return iconv('cp1252', $charset, html_entity_decode($m[0], $quotes, 'cp1252'));
+        }
+        return html_entity_decode($m[0], $quotes, $charset);
+    }, $str));
+    $out = str_replace('&rsquo;',html_entity_decode("&#x2019;", ENT_COMPAT, 'UTF-8'),$out);
+    return $out;
+}
+
+function inner_html($node) {
+    $innerHTML= ''; 
+    $children = $node->childNodes; 
+    foreach ($children as $child) { 
+        $innerHTML .= $child->ownerDocument->saveXML( $child ); 
+    } 
+
+    return $innerHTML; 
+}
+
+function attribute_text($element,$attr) {
+  $nodes = $element->getElementsByTagName($attr);
+  $out = '';
+  for($i = 0; $i < $nodes->length; $i++)
+    $out .= inner_html($nodes->item($i));
+  return $out;
+ }
+
+function attribute_text_field($element,$attr) {
+  $nodes = $element->getElementsByTagName('field');
+  $out = '';
+  for($i = 0; $i < $nodes->length; $i++)
+    if($nodes->item($i)->getAttribute('name') == $attr)
+       $out .= inner_html($nodes->item($i));
+  return $out;
+ }
+
+function az($s) {
+  return strtolower(preg_replace("/[^a-zA-Z0-9]+/", "", $s));
+}
+
+// Create taxonomy lookup arrays
+$tax = [];
+foreach(['resource_type','publications','resource_categories','article_categories'] as $name) {
+  $vid = taxonomy_vocabulary_machine_name_load($name)->vid;
+  echo "$name $vid\n";
+  foreach(taxonomy_get_tree($vid,0) as $term)
+    $tax[$name][az($term->name)] = $term->tid;  
+}
+$tax['publications']['briefingsoncodingcomp'] = $tax['publications']['briefingsoncodingcompliancestrategies'];
+
+$vid = taxonomy_vocabulary_machine_name_load('volume_and_issue')->vid;
+$parents = [];
+foreach(taxonomy_get_tree($vid,0) as $term) {
+ $parents[$term->tid] = $term;
+ $name = $term->name;
+ foreach($term->parents as $parent_tid) {
+   if(!$parent_tid || !isset($parents[$parent_tid])) continue;
+   $name = $parents[$parent_tid]->name . '/' . $name;
+ }
+ $tax['volume_and_issue'][$name] = $term->tid;
+}
+  
+$in = array();
+$x = 0;
+echo "Preparing content";
+
+$fields = explode(',','legacy_content_id,content_type,publication,resource_type,title,published,status,summary,body,meta_keywords,volume,issue,article_position');
+
+echo "Loading XML document jcp.xml";
+ 
+$xml = new DOMDocument(); 
+
+$str = utf8_for_xml(file_get_contents('legacy/jcp.xml'));
+$xml->loadXML($str,LIBXML_HTML_NOIMPLIED);
+$xmlstr = explode("\n",$str);
+
+$errors = libxml_get_errors();
+if(!empty($errors)) {
+  foreach ($errors as $error)
+     echo display_xml_error($error, $xmlstr);
+  die();
+}
+
+$xpath = new DOMXpath($xml);
+
+$volumes = array(false,false);
+
+foreach($xml->getElementsByTagName('content') as $content) {
+  if((++$x) % 10 == 0) { echo "."; }
+  $info = array();
+  foreach($fields as $field)
+    $info[$field] = attribute_text($content,$field);
+  if(empty($info['content_type'])) continue; 
+  $in[$info['content_type']][$info['legacy_content_id']] = $info;  
+}
+echo "\n";
+
+echo "Loading XML document icd10.xml";
+ 
+$xml = new DOMDocument(); 
+
+$str = utf8_for_xml(file_get_contents('legacy/icd10.xml'));
+$xml->loadXML($str,LIBXML_HTML_NOIMPLIED);
+$xmlstr = explode("\n",$str);
+
+$errors = libxml_get_errors();
+if(!empty($errors)) {
+  foreach ($errors as $error)
+     echo display_xml_error($error, $xmlstr);
+  die();
+}
+
+$xpath = new DOMXpath($xml);
+
+foreach($xml->getElementsByTagName('row') as $content) {
+  if((++$x) % 10 == 0) { echo "."; }
+  $info = array();
+  foreach($fields as $field)
+    $info[$field] = attribute_text_field($content,$field);
+  if(empty($info['content_type'])) continue;
+  $in[$info['content_type']][$info['legacy_content_id']] = $info;  
+}
+
+echo "\n";
+
+echo "Content types: ".implode(',',array_keys($in))."\n";
+
+function summary_cmp($text) {
+  $text = legacy_html_entity_decode($text);	
+  $text = strtolower(strip_tags($text));
+  $text = preg_replace("/[^A-Za-z0-9 ]/", '', $text);
+  return trim($text);
+}
+
+/* Load categories file */
+echo "Loading categories file.\n";
+
+$f = fopen('legacy/jcp_cat.csv','r');
+$line = 0;
+while(($row = fgetcsv($f))) {
+  $line++;
+  $content_id = $row[0];
+  $status = strtolower(trim($row[1])) == 'no' ? 0 : 1;  
+  foreach(array_keys($in) as $content_type) {
+     if(!isset($in[$content_type][$content_id]))
+       continue;     
+     $data = &$in[$content_type][$content_id];
+     $data['status'] = $status;
+
+     $cats = [];
+     if($content_type == 'article') $terms = &$tax['article_categories'];
+     else                           $terms = &$tax['resource_categories'];
+
+     foreach(array_slice($row,2) as $cat) {
+       if(empty($cat = az($cat))) continue;
+       if(!isset($terms[$cat]))
+          die("Missing $cat for line $line.");
+       $cats[] = $terms[$cat];
+     }
+
+     $data['categories'] = $cats;
+  } 
+}
+fclose($f); 
+
+$contentMap = array();
+
+echo "Loading existing content.\n";
+$query = db_query("select * from field_revision_field_legacy_content_id");
+while($row = $query->fetchAssoc())
+  $contentMap[$row['bundle']][$row['field_legacy_content_id_value']] = $row['entity_id'];
+
+$toDelete = array();
+
+foreach($in as $content_type=>$content) {
+ 
+    echo "\nProcessing $content_type.\n";
+	    
+    $nodes = array();
+
+    // First pass: create new entities and load existing ones
+    $toLoad = array();
+    foreach($content as $data) {
+      $content_id = $data['legacy_content_id'];
+      if(isset($data['remove'])) {
+        if(isset($contentMap[$content_type][$content_id]))
+          $toDelete[] = $contentMap[$content_type][$content_id];
+      } else if(isset($contentMap[$content_type][$content_id]))
+        $toLoad[] = $contentMap[$content_type][$content_id];
+      else
+        $nodes[$content_id] = entity_create('node',array('type'=>$content_type,'uid'=>1,'status'=>1,'comment'=>0,'promote'=>0));
+    }
+
+    foreach(node_load_multiple($toLoad) as $node) {
+      $w = entity_metadata_wrapper('node',$node);
+      $nodes[$w->field_legacy_content_id->value()] = $node;
+    }
+
+   // Second pass: update entity data
+   foreach($content as $data) {
+      $content_id = $data['legacy_content_id']; 
+      if(isset($data['remove']))
+        continue;
+      if(!isset($nodes[$content_id])) 
+       die('no node for '.$content_id);
+      $node = $nodes[$content_id];
+try {
+      $node->path['pathauto'] = TRUE;
+      $w = entity_metadata_wrapper('node',$node);
+
+      $w->status->set($data['status']);
+      $w->title->set(legacy_html_entity_decode($data['title']));
+      $w->body->value->set(legacy_html_entity_decode($data['body']));
+      $w->body->format->set('full_html');
+
+      $summary = legacy_html_entity_decode($data['summary']);
+      if(summary_cmp($summary) == summary_cmp($data['title']))
+         $summary = '';
+
+      $w->body->summary->set($summary);
+      $w->field_legacy_content_id = $content_id;
+      if(isset($files[$content_id]) && isset($w->field_file)) {       
+         $file = $files[$content_id];
+	 if(!isset($file->fid)) {
+	   $file->filemine = file_get_mimetype($file->uri);
+           $file = file_save($file);
+         }
+         $w->field_file->set(array(array('fid'=>$file->fid,'display'=>1,'description'=>'Document')));
+      }
+
+      if(isset($w->field_publication) && ($value = az($data['publication']))) {
+        if(!isset($tax['publications'][$value]))
+	  die('Missing publication:'.$value);
+	$w->field_publication = $tax['publications'][$value];
+      }
+
+      if(isset($w->field_resource_type) && ($value = az($data['resource_type']))) {
+        if(!isset($tax['resource_type'][$value]))
+	  die('Missing resource type:'.$value);
+	$w->field_resource_type = $tax['resource_type'][$value];
+      }
+
+      if(isset($w->field_news_categories) && isset($data['categories']))
+         $w->field_news_categories = $data['categories'];
+      if(isset($w->field_resource_category) && isset($data['categories']))
+         $w->field_resource_category = $data['categories'];
+
+      if(!empty($data['volume']) && !empty($data['issue']) && isset($w->field_volume_and_issue)) {
+         $value = $data['volume'] . '/' . $data['issue'];
+	 if(isset($tax['volume_and_issue'][$value]))
+   	   $w->field_volume_and_issue = $tax['volume_and_issue'][$value];
+	   //die('Missing volume and issue:'.$value);
+      }
+
+//      if(isset($w->field_volume_no))
+//          $w->field_volume_no = $data['volume'];
+//      if(isset($w->field_issue_no))
+//          $w->field_issue_no = $data['issue'];
+//      if(isset($w->field_article_position))
+//          $w->field_article_position = $data['article_position'];
+//      if(isset($w->field_analysis_category))
+//          $w->field_analysis_category = isset($data['field_analysis_category']) ? array($data['field_analysis_category']) : array();
+//      if(isset($w->field_wp_category))
+//          $w->field_wp_category = isset($data['field_wp_category']) ? array($data['field_wp_category']) : array();
+//      if(isset($w->field_enl_category) && isset($data['field_enl_category']))
+//          $w->field_enl_category = [$data['field_enl_category']];
+//      if(isset($w->field_pillar) && isset($data['field_pillar']))
+//          $w->field_pillar = $data['field_pillar'];
+//      if(isset($w->field_publication_name))
+//          $w->field_publication_name->set(isset($data['publication_name']) ? $data['publication_name'] : '');
+      $date = new DateTime($data['published']);
+      $w->field_published = $date->getTimestamp();
+      $w->save();
+
+      unset($contentMap[$content_type][$content_id]);      
+
+//      $access = content_access_get_per_node_settings($node);
+
+      // Set the role ids on the 'view' op for our roles
+//      $r = array();
+//      foreach($roles as $rid) $r[$rid] = 0;
+//      foreach($levels[$data['level']] as $rid) $r[] = $rid;
+//      $access['view'] = $r; // isset($access['view']) ? array_merge($access['view'],$r) : $r;
+//      content_access_save_per_node_settings($node,$access);
+      
+
+} catch( Exception $e ) {
+var_dump($data);
+var_dump($e);
+echo $e->getMessage();
+die();
+}
+echo '.';
+   }
+}
+
+echo "\nDeleting removed nodes\n";
+
+foreach($contentMap as $values)
+   $toDelete = array_merge($toDelete,$values);
+
+if(!empty($toDelete))
+   node_delete_multiple($toDelete);
+
+//echo "\nRebuilding node access\n";
+//node_access_rebuild();
+

@@ -1,0 +1,9 @@
+.view-search-api-solr {
+  .views-field-php {
+    @include lock;
+
+    .lock-icon {
+      position: static;
+    }
+  }
+}

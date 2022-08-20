@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Hcpro quiz installation routines
+ */
+
+/**
+ * Merge quiz result for 2 accounts.
+ */
+function hcpro_quiz_update_7001() {
+  db_update('quiz_node_results')
+    ->fields(array('uid' => '22631'))
+    ->condition('uid', '22289')
+    ->execute();
+}
+
+/**
+ * Uninstall UMD module.
+ */
+function hcpro_quiz_update_7002() {
+  if (module_exists('umd')) {
+    module_disable(['umd']);
+    drupal_uninstall_modules(['umd']);
+  }
+}

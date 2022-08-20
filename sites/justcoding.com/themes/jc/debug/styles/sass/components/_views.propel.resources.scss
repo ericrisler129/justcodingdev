@@ -1,0 +1,43 @@
+.block--views-propel-resource-block, .block--views-propel-resource-block-1 {
+  .views-row{
+	h2 {
+	  margin: 0;
+	  line-height: 1.2;
+	  font-size: $FSlarge;	  
+	}
+	.views-field-created {
+	  font-size: $FSsmall;
+	  font-style: italic;
+      color: $brand2;
+	  margin-top: 5px;
+	}
+	.views-field-body, .views-field-php {
+	  margin: 10px 0;
+	}
+  }  
+}
+
+.fix-width-20 {
+  width: 20%;
+}
+
+.fix-width-25 {
+  width: 25%;
+}
+
+.node-type-propel-resource {
+  .field-name-wistia-embed {
+    width: 70%;
+  }
+
+  .field-name-field-embed-code {
+    margin-bottom: 10px;
+	width: 70%;
+  }
+}
+
+.section-propel-resources {
+  .main-h1 {
+    display: none;
+  }
+}

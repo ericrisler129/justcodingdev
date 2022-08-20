@@ -1,0 +1,53 @@
+.view-resources, .view-propel-resource {
+  .views-exposed-form {
+    .views-exposed-widgets {
+      .views-exposed-widget {
+        font-size: $FSsmall;
+        float: none;
+        display: inline-block;
+        vertical-align: middle;
+        padding: 5px 0;
+        margin: 0 6px 0 0;
+
+        &.views-widget-filter-title {
+          label {
+            font-weight: $primaryFontWeightMed;
+            line-height: 35px;
+            display: inline-block;
+            vertical-align: middle;
+            padding: 0 10px;
+            margin: 0 -4px 0 0;
+            color: #ffffff;
+            background-color: $headings;
+          }
+
+          .views-widget {
+            display: inline-block;
+            vertical-align: middle;
+
+            input {
+              padding: 0 10px;
+              max-width: 200px;
+            }
+          }
+        }
+
+        .views-widget {
+          input,
+          select {
+            height: 35px;
+            border: 1px solid $inputBorder;
+          }
+        }
+      }
+
+      .views-submit-button {
+        input {
+          @extend .button-input;
+          @extend .button-input-brand1;
+          padding: 6px 20px;
+        }
+      }
+    }
+  }
+}

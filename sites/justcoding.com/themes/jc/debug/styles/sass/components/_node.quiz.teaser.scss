@@ -1,0 +1,35 @@
+.node {
+  &.node--quiz {
+    &.node-teaser {
+      h2 {
+        margin: 0 0 15px;
+
+        @include breakpoint($mobileSmall) {
+          margin: 0;
+        }
+      }
+
+      .group-left {
+        width: 100%;
+
+        @include breakpoint($mobileSmall) {
+          width: 64%;
+        }
+      }
+
+      .group-right {
+        width: 100%;
+
+        @include breakpoint($mobileSmall) {
+          width: 34%;
+        }
+
+        .button {
+          a {
+            padding: 5px 13px;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+name = hcpro_roles_jcp
+description = Default roles
+core = 7.x
+package = HCPro Configuration
+version = 7.x-1.0
+project = hcpro_roles
+dependencies[] = features
+features[features_api][] = api:2
+features[user_role][] = administrator
+features[user_role][] = basic
+features[user_role][] = corporate
+features[user_role][] = editor
+features[user_role][] = platinum
+project path = sites/justcoding.com/modules/features

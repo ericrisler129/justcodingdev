@@ -1,0 +1,109 @@
+.node {
+  &.node--quiz-topic {
+    .group-left {
+      width: 100%;
+
+      @include breakpoint($mobileSmall) {
+        width: 64%;
+      }
+    }
+
+    .group-right {
+      width: 100%;
+
+      @include breakpoint($mobileSmall) {
+        width: 34%;
+      }
+
+      .button {
+        &.free-quiz-button {
+          display: none;
+
+          .page-quizzes-category-547 & {
+            display: inline-block;
+          }
+        }
+
+        a {
+          padding: 5px 13px;
+        }
+      }
+    }
+
+    .field-name-field-quiz-articles {
+      .label-above {
+        font-size: $FSlarge;
+        font-weight: $primaryFontWeightBold;
+        margin: 5px 0;
+      }
+
+      .node--attachment {
+        margin: 5px 0;
+
+        .flag-link-toggle span {
+          display: none;
+        }
+      }
+    }
+
+    .field-name-field-credits {
+      margin: 0 0 10px;
+
+      .label-above {
+        font-weight: $primaryFontWeightBold;
+      }
+
+      .field-collection-item-field-credits {
+        div {
+          font-size: $FSsmall;
+          display: inline-block;
+          margin: 0 5px 0 0;
+        }
+      }
+    }
+
+    .quiz-status {
+      float: right;
+      width: 130px;
+
+      .result-status {
+        padding: 3px;
+        margin: 0 0 10px;
+        background-color: #f1f1f1;
+
+        &.status-0 {
+          .status-0 {
+            font-weight: $primaryFontWeightMed;
+            background-color: $buttonRed;
+            color: #ffffff;
+          }
+        }
+
+        &.status-1 {
+          .status-1 {
+            font-weight: $primaryFontWeightMed;
+            background-color: $buttonGreen;
+            color: #ffffff;
+          }
+        }
+
+        &.status-2 {
+          .status-2 {
+            font-weight: $primaryFontWeightMed;
+            background-color: $buttonYellow;
+            color: #ffffff;
+          }
+        }
+
+        div {
+          padding: 5px;
+        }
+      }
+
+      .button {
+        text-align: center;
+        width: 130px;
+      }
+    }
+  }
+}
